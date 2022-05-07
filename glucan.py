@@ -1,11 +1,48 @@
+from enum import Enum
+
 from parse_input import *
 from RatioBlock import RatioBlock
 from Event import *
 
+class RatioType(Enum):
+	SENSITIVITY = 0
+	BASAL = 1
+	CARB_RATIO = 2
 
-# def analyze_sensitivity(event, sensitivity, overlap):
-# 	if event["type"] == "independent":
-# 		overlapFraction = overlap / 
+
+def calculate_fraction(event, block, ratio_type):
+	overlap = block.range.overlap(event.range)
+	fraction = overlap / block.range.length()
+
+	if event.type == EventType.INDEPENDENT:
+		if event.source == Source.SENSOR:
+			fraction *= 1./3.
+
+	if event.type == EventType.CORRECTION:
+		if event.source == Source.SENSOR:
+			fraction *= 1./3.
+		fraction *= 1./2.
+		if block.range.contains_time(event.range.start) and ratio_type == RatioType.SENSITIVITY:
+			fraction += 1./2.
+
+	if event.type == EventType.BOLUS:
+		if event.source == Source.SENSOR:
+			fraction *= 1./3.
+		fraction *= 1./2.
+
+		if ratio_type == RatioType.SENSITIVITY and block.range.contains_time(event.range.start) and (event.start_lnh == LowNormalHigh.HIGH or event.start_lnh == LowNormalHigh.LOW):
+			fraction += 1./4.
+		if ratio_type == RatioType.CARB_RATIO and block.range.contains_time(event.range.start) and event.start_lnh == LowNormalHigh.NORMAL:
+			fraction += 1./2.
+		if ratio_type == RatuiType.CARB_RATIO and block.range.contains_time(event.range.start) and (event.start_lnh == LowNormalHigh.HIGH or event.start_lnh == LowNormalHigh.LOW):
+			fraction += 1./4.
+
+	return fraction
+
+def analyze_ratio_block(event, block, ratio_type):
+	fraction = calculate_fraction(event, block, ratio_type)
+	return str(block.range) + ": " + str(fraction) + " (" + Range.time_string(block.range.overlap(event.range)) + " overlap)"
+
 
 print("********************************************************")
 print("This software is an experimental tool.  The author makes")
@@ -47,17 +84,17 @@ for event in events:
 	print("\nevent:")
 	print(event)
 	
-	print("sensitivity overlap:")
+	print("  sensitivity overlap:")
 	for block in sensitivities_impacting[event]:
-		print(str(block.range) + ", overlap " + Range.time_string(block.range.overlap(event.range)))
+		print("    " + analyze_ratio_block(event, block, RatioType.SENSITIVITY))
 
-	print("basal overlap:")
+	print("  basal overlap:")
 	for block in basals_impacting[event]:
-		print(str(block.range) + ", overlap " + Range.time_string(block.range.overlap(event.range)))
+		print("    " + analyze_ratio_block(event, block, RatioType.BASAL))
 
-	print("carb ratio overlap:")
+	print("  carb ratio overlap:")
 	for block in carb_ratios_impacting[event]:
-		print(str(block.range) + ", overlap " + Range.time_string(block.range.overlap(event.range)))
+		print("    " + analyze_ratio_block(event, block, RatioType.CARB_RATIO))
 
 print("\n")
 			

@@ -42,6 +42,9 @@ class Range:
 		# leave this in here to catch if our logic above was wrong
 		raise Exception("unhandled range overlap type: overlap(" + range1 + ", " + range2 + ")")
 
+	def contains_time(time):
+		return time >= self.start and time <= self.end
+
 	def time_string(time):
 		hours = modf(time)[1]
 		hourFrac = modf(time)[0]

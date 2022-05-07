@@ -73,8 +73,8 @@ class Event:
 	start_glucose: float
 	end_lnh: LowNormalHigh
 	end_glucose: float
-	sensor_or_test: Source
-	basal_or_sensitivity: Method
+	source: Source
+	method: Method
 
 	@staticmethod
 	def Parse(line, uid):
@@ -109,8 +109,8 @@ class Event:
 			start_glucose = start_glucose, \
 			end_lnh = end_lnh, \
 			end_glucose = end_glucose, \
-			sensor_or_test = source, \
-			basal_or_sensitivity = method, \
+			source = source, \
+			method = method, \
 			range = Range(start = start_time, end = end_time)
 			)
 
