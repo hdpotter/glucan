@@ -1,39 +1,12 @@
-
-
 from math import modf
 
-def parseTime(timeString):
-	tokens = timeString.split(":")
+from Event import Event
+from Range import Range
+from RatioBlock import RatioBlock
 
-	if len(tokens) != 2:
-		raise Exception("time format is hh:mm, 24h time")
-
-	hours = int(tokens[0])
-	minutes = int(tokens[1])
-
-	return float(hours) + float(minutes)/60.
-
-def timeString(time):
-	hours = modf(time)[1]
-	hourFrac = modf(time)[0]
-
-	minutes = modf(hourFrac*60)[1]
-	minuteFrac = modf(hourFrac*60)[0]
-
-	seconds = modf(minuteFrac*60)[1]
-
-	# we might get a tiny fraction of a second from floating point error, so ignore it
-	if(seconds >= 0.01):
-		return str(int(hours)) + ":" + str(int(minutes)).zfill(2) + ":" + str(seconds)
-	else:
-		return str(int(hours)) + ":" + str(int(minutes)).zfill(2)
-
-def rangeString(range):
-	return "[" + timeString(range[0]) + " - " + timeString(range[1]) + "]"
-	# return "[" + str(range[0]) + " - " + str(range[1]) + "]"
 
 # will be loading sensitivities, carb ratios, and basals
-def parseRatios(filepath):
+def parse_ratios(filepath):
 	lines = []
 	for line in open(filepath):
 		lines.append(line[:-1])
@@ -41,37 +14,36 @@ def parseRatios(filepath):
 	firstTokens = lines[0].split(",")
 
 	if(len(firstTokens) != 2 or firstTokens[0] != "time" or firstTokens[1] != "ratio"):
-		raise Exception("first line of sensitivities must be time | ratio")
+		raise Exception("first line of ratios must be time | ratio")
 
-	if(parseTime(lines[1].split(",")[0]) != 0):
-		raise Exception("first time in sensitivities must be 00:00")
+	if(Range.parse_time(lines[1].split(",")[0]) != 0):
+		raise Exception("first time in ratios must be 00:00")
 
-	sensitivityPoints = []
+	ratioPoints = []
 	for line in lines[1:]:
 		tokens = line.split(",")
 
 		if(len(tokens) != 2):
-			raise Exception("wrong number of entries on line " + line + " of sensitivities")
+			raise Exception("wrong number of entries on line " + line + " of " + filepath)
 
-		time = parseTime(tokens[0])
-		sensitivity = float(tokens[1])
-		sensitivityPoints.append([time, sensitivity])
+		time = Range.parse_time(tokens[0])
+		ratio = float(tokens[1])
+		ratioPoints.append([time, ratio])
 
-	sensitivityRanges = {}
-	uid = 0
-	for i in range(len(sensitivityPoints)):
-		timeStart = sensitivityPoints[i][0]
-		timeEnd = sensitivityPoints[i+1][0] if i < len(sensitivityPoints) - 1 else 24.
-		sensitivity = sensitivityPoints[i][1]
+	ratioBlocks = []
+	for i in range(len(ratioPoints)):
+		timeStart = ratioPoints[i][0]
+		timeEnd = ratioPoints[i+1][0] if i < len(ratioPoints) - 1 else 24.
+		ratio = ratioPoints[i][1]
 
-		sensitivityRanges[uid] = {"uid": uid, "range": [timeStart, timeEnd], "sensitivity": sensitivity}
-		
-		uid += 1
+		ratioBlocks.append(RatioBlock(
+			range = Range(start = timeStart, end = timeEnd),
+			ratio = ratio))
 
-	return sensitivityRanges
+	return ratioBlocks
 
 
-def parseEvents(filepath):
+def parse_events(filepath):
 	lines = []
 	for line in open(filepath):
 		lines.append(line[:-1])
@@ -90,77 +62,19 @@ def parseEvents(filepath):
 		):
 		raise Exception("first line of events must be event_type | start_time | low_normal_high | glucose | end_time | low_normal_high | glucose | glucose_type | basal_or_sensitivity")
 
-	events = {}
+	events = []
 	uid = 0
 	for line in lines[1:]:
-		tokens = line.split(",")
+		if(line.isspace()):
+			continue
 
-		if(len(tokens) > 9):
-			raise Exception("too many entries on line " + line + " of events")
-		while(len(tokens) < 9):
-			tokens.append("")
-
-		if(tokens[0] != "independent" and tokens[0] != "correction" and tokens[0] != "bolus"):
-			raise Exception("type on line " + line + " must be independent, correction, or bolus")
-		eventType = tokens[0]
-
-		time1 = parseTime(tokens[1])
-
-		range1 = ""
-		if(eventType != "correction"):
-			if(tokens[2] != "low" and tokens[2] != "high" and tokens[2] != "normal"):
-				raise Exception("glucose range on line " + line + " must be low, normal, or high")
-			range1 = tokens[2]
-
-		glucose1 = int(tokens[3])
-
-		time2 = parseTime(tokens[4])
-
-		# mandatory field
-		range2 = ""
-		if(eventType != "independent"):
-			if(tokens[5] != "low" and tokens[5] != "high" and tokens[5] != "normal"):
-				raise Exception("glucose range on line " + line + " must be low, normal, or high")
-			range2 = tokens[5]
-
-		# optional field
-		glucose2 = int(tokens[6])
-
-		if(tokens[7] != "sensor" and tokens[7] != "test"):
-			raise Exception("source on line " + line + " must be sensor or test")
-		source = tokens[7]
-
-		if(tokens[8] != "basal" and tokens[8] != "sensitivity"):
-			raise Exception("method on line " + line + " must be basal or sensitivity")
-		method = tokens[8]
-
-		# make ranges compliant
-		if(time2 < time1):
-			print("adding 24h to time because range contains midnight")
-			time2 += 24.
-
-
-		event = {}
-		event["uid"] = uid
-		event["type"] = eventType
-		# event["time1"] = time1
-		event["range1"] = range1
-		event["glucose1"] = glucose1
-		# event["time2"] = time2
-		event["range2"] = range2
-		event["glucose2"] = glucose2
-		event["source"] = source
-		event["method"] = method
-
-		event["range"] = [time1, time2]
-
-		events[uid] = event
+		events.append(Event.Parse(line, uid))
 		uid += 1
 
 	return events
 
 
-# events = parseEvents("events.csv")
+# events = parse_events("example_input/events.csv")
 # for event  in events:
 # 	print(event)
 
