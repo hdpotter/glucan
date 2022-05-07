@@ -62,7 +62,11 @@ class Method(Enum):
 			return Method.SENSITIVITY
 		raise Exception("unrecognized Method " + string)
 
-
+def parse_float_with_default(string, default):
+	try:
+		return float(string)
+	except:
+		return default
 
 @dataclass
 class Event:
@@ -93,7 +97,7 @@ class Event:
 		start_glucose = float(tokens[3])
 		end_time = Range.parse_time(tokens[4])
 		end_lnh = LowNormalHigh.parse(tokens[5])
-		end_glucose = float(tokens[6])
+		end_glucose = parse_float_with_default(tokens[6], -1)
 		source = Source.parse(tokens[7])
 		method = Method.parse(tokens[8])
 
