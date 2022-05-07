@@ -10,7 +10,7 @@ from Event import *
 print("********************************************************")
 print("This software is an experimental tool.  The author makes")
 print("no guarantees about the correctness of its outputs or")
-print("its fitness for any task.")
+print("its suitability for any task.")
 print("********************************************************")
 print("")
 
