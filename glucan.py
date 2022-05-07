@@ -51,11 +51,11 @@ for event in events:
 	for block in sensitivities_impacting[event]:
 		print(str(block.range) + ", overlap " + Range.time_string(block.range.overlap(event.range)))
 
-	print("basal overlap")
+	print("basal overlap:")
 	for block in basals_impacting[event]:
 		print(str(block.range) + ", overlap " + Range.time_string(block.range.overlap(event.range)))
 
-	print("carb ratio overlap")
+	print("carb ratio overlap:")
 	for block in carb_ratios_impacting[event]:
 		print(str(block.range) + ", overlap " + Range.time_string(block.range.overlap(event.range)))
 
