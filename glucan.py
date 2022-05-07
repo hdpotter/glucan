@@ -7,8 +7,12 @@ from Event import *
 # 	if event["type"] == "independent":
 # 		overlapFraction = overlap / 
 
-
-
+print("********************************************************")
+print("This software is an experimental tool.  The author makes")
+print("no guarantees about the correctness of its outputs or")
+print("its fitness for any task.")
+print("********************************************************")
+print("")
 
 sensitivities = parse_ratios("example_input/sensitivities.csv")
 basals = parse_ratios("example_input/basals.csv")
@@ -55,7 +59,7 @@ for event in events:
 	for block in carb_ratios_impacting[event]:
 		print(str(block.range) + ", overlap " + Range.time_string(block.range.overlap(event.range)))
 
-
+print("\n")
 			
 			
 
