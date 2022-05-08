@@ -42,7 +42,7 @@ class Range:
 		# leave this in here to catch if our logic above was wrong
 		raise Exception("unhandled range overlap type: overlap(" + range1 + ", " + range2 + ")")
 
-	def contains_time(time):
+	def contains_time(self, time):
 		return time >= self.start and time <= self.end
 
 	def time_string(time):
@@ -55,10 +55,10 @@ class Range:
 		seconds = modf(minuteFrac*60)[1]
 
 		# we might get a tiny fraction of a second from floating point error, so ignore it
-		if(seconds >= 0.01):
-			return str(int(hours)) + ":" + str(int(minutes)).zfill(2) + ":" + str(seconds)
-		else:
+		if seconds <= 0.01 or seconds >= 59.99:
 			return str(int(hours)) + ":" + str(int(minutes)).zfill(2)
+		else:
+			return str(int(hours)) + ":" + str(int(minutes)).zfill(2) + ":" + str(seconds)
 
 	def __str__(self):
 		return "[" + Range.time_string(self.start) + ", " + Range.time_string(self.end) + "]"

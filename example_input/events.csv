@@ -1,2 +1,2 @@
 event_type,start_time,low_normal_high,start_glucose,end_time,low_normal_high,end_glucose,glucose_type,basal_or_sensitivity
-independent,12:45,high,200,21:12,low,60,test,basal
+correction,12:15,high,200,13:00,low,60,test,sensitivity
