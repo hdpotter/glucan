@@ -61,7 +61,7 @@ class Range:
 			return str(int(hours)) + ":" + str(int(minutes)).zfill(2) + ":" + str(seconds)
 
 	def __str__(self):
-		return "[" + Range.time_string(self.start) + ", " + Range.time_string(self.end) + "]"
+		return "[" + Range.time_string(self.start).rjust(5) + ", " + Range.time_string(self.end).rjust(5) + "]"
 
 	@staticmethod
 	def parse_time(timeString):

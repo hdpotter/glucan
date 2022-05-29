@@ -6,7 +6,7 @@ from RatioBlock import RatioBlock
 
 
 # will be loading sensitivities, carb ratios, and basals
-def parse_ratios(filepath):
+def parse_ratios(filepath, ratio_type):
 	lines = []
 	for line in open(filepath):
 		lines.append(line[:-1])
@@ -31,14 +31,18 @@ def parse_ratios(filepath):
 		ratioPoints.append([time, ratio])
 
 	ratioBlocks = []
+	uid = 0
 	for i in range(len(ratioPoints)):
 		timeStart = ratioPoints[i][0]
 		timeEnd = ratioPoints[i+1][0] if i < len(ratioPoints) - 1 else 24.
 		ratio = ratioPoints[i][1]
 
 		ratioBlocks.append(RatioBlock(
+			uid = uid,
 			range = Range(start = timeStart, end = timeEnd),
-			ratio = ratio))
+			ratio = ratio,
+			type = ratio_type))
+		uid += 1
 
 	return ratioBlocks
 
