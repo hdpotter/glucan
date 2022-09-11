@@ -111,8 +111,8 @@ print("The author makes no guarantees about the correctness of its outputs or it
 print("****************************************************************************************************")
 print("")
 
-sensitivities = parse_ratios("example_input/sensitivities.csv", RatioType.SENSITIVITY)
-basals = parse_ratios("example_input/basals.csv", RatioType.BASAL)
+sensitivities = parse_ratios("data/sensitivities.csv", RatioType.SENSITIVITY)
+basals = parse_ratios("data/basals.csv", RatioType.BASAL)
 
 half_hours = []
 uid = 0
@@ -124,9 +124,9 @@ for hh in range(0, 48):
                 type = RatioType.BASAL))
         uid += 1
 	
-carb_ratios = parse_ratios("example_input/carb_ratios.csv", RatioType.CARB_RATIO)
+carb_ratios = parse_ratios("data/carb_ratios.csv", RatioType.CARB_RATIO)
 
-events = parse_events("example_input/events.csv")
+events = parse_events("data/events.csv")
 
 sensitivities_impacting = {}
 basals_impacting = {}
