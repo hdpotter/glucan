@@ -23,19 +23,33 @@ class LowNormalHigh(Enum):
 	NORMAL = 1
 	HIGH = 2
 	UNKNOWN = 3
+	OUT_OF_RANGE = 4
 
 	@staticmethod
 	def parse(string):
+		if string == "in range":
+			return LowNormalHigh.NORMAL
+		if string == "out of range":
+			return LowNormalHigh.OUT_OF_RANGE
 		if string == "low":
 			return LowNormalHigh.LOW
-		if string == "normal":
-			return LowNormalHigh.NORMAL
 		if string == "high":
 			return LowNormalHigh.HIGH
 		if string == "unknown" or string == "":
 			return LowNormalHigh.UNKNOWN
 		raise Exception("unrecognized LowNormalHigh " + string)
 
+	def __str__(self):
+		if self == LowNormalHigh.OUT_OF_RANGE:
+			return "out of range"
+		if self == LowNormalHigh.LOW:
+			return "low"
+		if self == LowNormalHigh.NORMAL:
+			return "normal"
+		if self == LowNormalHigh.HIGH:
+			return "high"
+		if self == LowNormalHigh.UNKNOWN:
+			return "unknown"
 
 class Source(Enum):
 	SENSOR = 0
@@ -50,21 +64,15 @@ class Source(Enum):
 		raise Exception("unrecognized Source " + string)
 
 
-class Method(Enum):
-	BASAL = 0
-	SENSITIVITY = 1
-
-	@staticmethod
-	def parse(string):
-		if string == "basal":
-			return Method.BASAL
-		if string == "sensitivity":
-			return Method.SENSITIVITY
-		raise Exception("unrecognized Method " + string)
-
 def parse_float_with_default(string, default):
 	try:
 		return float(string)
+	except:
+		return default
+
+def parse_time_with_default(string, default):
+	try:
+		return Range.parse_time(string)
 	except:
 		return default
 
@@ -75,11 +83,11 @@ class Event:
 	range: Range
 	start_lnh: LowNormalHigh
 	start_glucose: float
+	adjustment_time: float
 	end_lnh: LowNormalHigh
 	end_glucose: float
 	source: Source
-	method: Method
-
+	
 	@staticmethod
 	def Parse(line, uid):
 		tokens = line.split(",")
@@ -94,28 +102,33 @@ class Event:
 		event_type = EventType.parse(tokens[0])
 		start_time = Range.parse_time(tokens[1])
 		start_lnh = LowNormalHigh.parse(tokens[2])
-		start_glucose = float(tokens[3])
-		end_time = Range.parse_time(tokens[4])
-		end_lnh = LowNormalHigh.parse(tokens[5])
-		end_glucose = parse_float_with_default(tokens[6], -1)
-		source = Source.parse(tokens[7])
-		method = Method.parse(tokens[8])
-
+		start_glucose = parse_float_with_default(tokens[3], -1)
+		adjustment_time = parse_time_with_default(tokens[4], -1)
+		end_time = Range.parse_time(tokens[5])
+		end_lnh = LowNormalHigh.parse(tokens[6])
+		end_glucose = parse_float_with_default(tokens[7], -1)
+		source = Source.parse(tokens[8])
+	
 		# make range compliant
 		if(end_time < start_time):
 			print("adding 24h to time because range contains midnight")
-			time2 += 24.
+			end_time += 24.
+
+		range = Range(start = start_time, end = end_time)
+		
+		if adjustment_time >= 0 and not range.contains_time(adjustment_time, 1):
+			raise Exception("adjustment time is not within time range")       
 
 		return Event( \
 			uid = uid, \
 			type = event_type, \
 			start_lnh = start_lnh, \
 			start_glucose = start_glucose, \
+			adjustment_time = adjustment_time, \
 			end_lnh = end_lnh, \
 			end_glucose = end_glucose, \
 			source = source, \
-			method = method, \
-			range = Range(start = start_time, end = end_time)
+			range = range
 			)
 
 	def __hash__(self):

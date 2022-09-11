@@ -58,13 +58,13 @@ def parse_events(filepath):
 		firstTokens[1] != "start_time" or
 		firstTokens[2] != "low_normal_high" or
 		firstTokens[3] != "start_glucose" or
-		firstTokens[4] != "end_time" or
-		firstTokens[5] != "low_normal_high" or
-		firstTokens[6] != "end_glucose" or
-		firstTokens[7] != "glucose_type" or
-		firstTokens[8] != "basal_or_sensitivity"
+		firstTokens[4] != "adjustment_time" or
+		firstTokens[5] != "end_time" or
+		firstTokens[6] != "low_normal_high" or
+		firstTokens[7] != "end_glucose" or
+		firstTokens[8] != "glucose_type"
 		):
-		raise Exception("first line of events must be event_type | start_time | low_normal_high | glucose | end_time | low_normal_high | glucose | glucose_type | basal_or_sensitivity")
+		raise Exception("first line of events must be event_type | Start_Time | Start_Range | Start_Glucose | adjustment_time | end_time | low_normal_high | glucose | glucose_type")
 
 	events = []
 	uid = 0
