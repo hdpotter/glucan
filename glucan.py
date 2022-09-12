@@ -66,10 +66,11 @@ def print_half_hour_block_contributions(half_hours, block, events):
 
 	for half_hour_block in half_hours:
 
+		print_worthy = 0.
+
 		if block.range.overlap(half_hour_block.range) > 0:
 
 			contributions_string = "            " + str(half_hour_block.range) + ": \n"
-			print_worthy = 0.
 									
 			for lnh in LowNormalHigh:
 
@@ -103,7 +104,7 @@ def print_half_hour_block_contributions(half_hours, block, events):
 
 				print_worthy += contribution
 
-		if print_worthy > 0:
+		if block.range.end - block.range.start > 0.5 and print_worthy > 0:
 			contributions_string = contributions_string[:-1]
 			print(contributions_string)
 
