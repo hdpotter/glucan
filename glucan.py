@@ -220,46 +220,46 @@ for block in basals:
 
 		print("      " + str(lnh) + ": " + str(fraction_contributions[lnh][block]))
 
-		if fraction_contributions[LowNormalHigh.NORMAL][block] < fraction_contributions[LowNormalHigh.LOW][block] and \
-		   fraction_contributions[LowNormalHigh.HIGH][block] < fraction_contributions[LowNormalHigh.LOW][block]:
+	if fraction_contributions[LowNormalHigh.NORMAL][block] < fraction_contributions[LowNormalHigh.LOW][block] and \
+	   fraction_contributions[LowNormalHigh.HIGH][block] < fraction_contributions[LowNormalHigh.LOW][block]:
 
-			print(lnh)
-			print(sufficient_data_contributions[lnh][block])
-			if sufficient_data_contributions[lnh][block] >= 2 and \
-			   ((fraction_contributions[LowNormalHigh.HIGH][block] == 0 and \
-			     fraction_contributions[LowNormalHigh.LOW][block] >= 2) or \
-			    (fraction_contributions[LowNormalHigh.HIGH][block] > 0 and \
-			     fraction_contributions[LowNormalHigh.LOW][block]/fraction_contributions[LowNormalHigh.HIGH][block] >= 3)):
+		# print(lnh)
+		# print(sufficient_data_contributions[lnh][block])
+		if sufficient_data_contributions[lnh][block] >= 2 and \
+		   ((fraction_contributions[LowNormalHigh.HIGH][block] == 0 and \
+		     fraction_contributions[LowNormalHigh.LOW][block] >= 2) or \
+		    (fraction_contributions[LowNormalHigh.HIGH][block] > 0 and \
+			 fraction_contributions[LowNormalHigh.LOW][block]/fraction_contributions[LowNormalHigh.HIGH][block] >= 3)):
 				print("=> LOW")
 
-			else:
-				if fraction_contributions[LowNormalHigh.HIGH][block] > 0:
-					print("      => -" + str(fraction_contributions[LowNormalHigh.LOW][block]/fraction_contributions[LowNormalHigh.HIGH][block]))
-				print_half_hour_block_contributions(half_hours, block, events)
+		else:
+			if fraction_contributions[LowNormalHigh.HIGH][block] > 0:
+				print("      => -" + str(fraction_contributions[LowNormalHigh.LOW][block]/fraction_contributions[LowNormalHigh.HIGH][block]))
+			print_half_hour_block_contributions(half_hours, block, events)
 
-		if fraction_contributions[LowNormalHigh.LOW][block] < fraction_contributions[LowNormalHigh.NORMAL][block] and \
-		   fraction_contributions[LowNormalHigh.HIGH][block] < fraction_contributions[LowNormalHigh.NORMAL][block]:
+	if fraction_contributions[LowNormalHigh.LOW][block] < fraction_contributions[LowNormalHigh.NORMAL][block] and \
+	   fraction_contributions[LowNormalHigh.HIGH][block] < fraction_contributions[LowNormalHigh.NORMAL][block]:
 
-			if sufficient_data_contributions[event.end_lnh][block] >= 2:
-				print("=> NORMAL")
+		if sufficient_data_contributions[event.end_lnh][block] >= 2:
+			print("=> NORMAL")
 
-			else:
-				print_half_hour_block_contributions(half_hours, block, events)
+		else:
+			print_half_hour_block_contributions(half_hours, block, events)
 
-		if fraction_contributions[LowNormalHigh.LOW][block] < fraction_contributions[LowNormalHigh.HIGH][block] and \
-		   fraction_contributions[LowNormalHigh.NORMAL][block] < fraction_contributions[LowNormalHigh.HIGH][block]:
+	if fraction_contributions[LowNormalHigh.LOW][block] < fraction_contributions[LowNormalHigh.HIGH][block] and \
+	   fraction_contributions[LowNormalHigh.NORMAL][block] < fraction_contributions[LowNormalHigh.HIGH][block]:
 
-			if sufficient_data_contributions[event.end_lnh][block] >= 2 and \
-			   ((fraction_contributions[LowNormalHigh.LOW][block] == 0 and \
-			     fraction_contributions[LowNormalHigh.HIGH][block] >= 2) or \
-			    (fraction_contributions[LowNormalHigh.LOW][block] > 0 and \
-			     fraction_contributions[LowNormalHigh.HIGH][block]/fraction_contributions[LowNormalHigh.LOW][block] >= 3)):
+		if sufficient_data_contributions[event.end_lnh][block] >= 2 and \
+		   ((fraction_contributions[LowNormalHigh.LOW][block] == 0 and \
+		     fraction_contributions[LowNormalHigh.HIGH][block] >= 2) or \
+		    (fraction_contributions[LowNormalHigh.LOW][block] > 0 and \
+		     fraction_contributions[LowNormalHigh.HIGH][block]/fraction_contributions[LowNormalHigh.LOW][block] >= 3)):
 				print("=> HIGH")
 
-			else:
-				if fraction_contributions[LowNormalHigh.LOW][block] > 0:
-					print("      => +" + str(fraction_contributions[LowNormalHigh.HIGH][block]/fraction_contributions[LowNormalHigh.LOW][block]))
-				print_half_hour_block_contributions(half_hours, block, events)
+		else:
+			if fraction_contributions[LowNormalHigh.LOW][block] > 0:
+				print("      => +" + str(fraction_contributions[LowNormalHigh.HIGH][block]/fraction_contributions[LowNormalHigh.LOW][block]))
+			print_half_hour_block_contributions(half_hours, block, events)
 					
 print("")
 
