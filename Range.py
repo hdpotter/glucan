@@ -47,7 +47,7 @@ class Range:
 
 	@staticmethod
 	def contains_time_no_wrap(range, time, inclusive):
-                if inclusive == 1:
+                if inclusive:
                         return time >= range.start and time <= range.end
                 else:
                         return time > range.start and time < range.end

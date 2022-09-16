@@ -116,8 +116,8 @@ class Event:
 
 		range = Range(start = start_time, end = end_time)
 		
-		if adjustment_time >= 0 and not range.contains_time(adjustment_time, 1):
-			raise Exception("adjustment time is not within time range")       
+		if adjustment_time >= 0 and not range.contains_time(adjustment_time, True):
+			raise Exception("adjustment time is not within time range")
 
 		return Event( \
 			uid = uid, \

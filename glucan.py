@@ -4,7 +4,6 @@ from parse_input import *
 from RatioBlock import *
 from Event import *
 
-
 def calculate_fraction(event, block):
 	overlap = block.range.overlap(event.range)
 	fraction = overlap / event.range.length()
@@ -12,17 +11,21 @@ def calculate_fraction(event, block):
 	sufficient_sensitivity_data = 0
 	sufficient_carb_ratio_data = 0
 
-	if event.type == EventType.INDEPENDENT and block.type == RatioType.BASAL and block.range.contains_time(event.range.end, 0):
-		sufficient_basal_data = 1.
+	if event.type == EventType.INDEPENDENT:
+		if block.type == RatioType.BASAL:
+			if block.range.contains_time(event.range.end, False):
+				sufficient_basal_data = 1
+		else:
+			fraction = 0
 
-	if event.type == EventType.BOLUS:
+	elif event.type == EventType.BOLUS:
 		if block.type == RatioType.BASAL:
 			fraction *= 1./2.  
-		if block.type == RatioType.CARB_RATIO:
-			if block.range.contains_time(event.adjustment_time, 0):
+		elif block.type == RatioType.CARB_RATIO:
+			if block.range.contains_time(event.adjustment_time, False):
 				if event.start_lnh == LowNormalHigh.NORMAL:
 					fraction = 1./2.
-					sufficient_carb_ratio_data = 1./2.
+					sufficient_carb_ratio_data = 1
 				elif (event.start_lnh == LowNormalHigh.OUT_OF_RANGE or \
 				      event.start_lnh == LowNormalHigh.LOW or event.start_lnh == LowNormalHigh.HIGH):
 					fraction = 1./4.
@@ -30,25 +33,30 @@ def calculate_fraction(event, block):
 					fraction = 0
 			else:
 				fraction = 0
-		if block.type == RatioType.SENSITIVITY:
-			if block.range.contains_time(event.adjustment_time, 0) and \
+		elif block.type == RatioType.SENSITIVITY:
+			if block.range.contains_time(event.adjustment_time, False) and \
 			   (event.start_lnh == LowNormalHigh.OUT_OF_RANGE or \
 			    event.start_lnh == LowNormalHigh.LOW or event.start_lnh == LowNormalHigh.HIGH):
 					fraction = 1./4.
 			else:
 				fraction = 0
+		else:
+			fraction = 0
 
-	if event.type == EventType.CORRECTION:
+	elif event.type == EventType.CORRECTION:
 		if block.type == RatioType.BASAL:
-			fraction *= 1./2.                      	
-		if block.type == RatioType.SENSITIVITY:
-			if block.range.contains_time(event.adjustment_time, 0):
+			fraction *= 1./2.
+		elif block.type == RatioType.SENSITIVITY:
+			if block.range.contains_time(event.adjustment_time, False):
 				fraction = 1./2.
-				sufficient_sensitivity_data = 1./2.
+				sufficient_sensitivity_data = 1
 			else:
 				fraction = 0
-		# if block.type == RatioType.CARB_RATIO:
-		# 	fraction = 0
+		else:
+			fraction = 0
+
+	else:
+		fraction = 0
 
 	if event.source == Source.SENSOR:
 		fraction *= 1./3.
@@ -79,30 +87,25 @@ def print_half_hour_block_contributions(half_hours, block, events):
 				
 				fraction = 0.
 				sufficient_basal_data = 0.
-				contribution = 0.
+				sufficient_carb_ratio_data = 0.
+				sufficient_sensitivity_data = 0.
 				
 				for event in events:
+					if event.end_lnh == lnh and half_hour_block.range.overlap(event.range) > 0:
+						fraction += calculate_fraction(event, half_hour_block) [0]
+						sufficient_basal_data += calculate_fraction(event, half_hour_block) [1]
+						sufficient_carb_ratio_data += calculate_fraction(event, half_hour_block) [2]
+						sufficient_sensitivity_data += calculate_fraction(event, half_hour_block) [3]
+						# (fraction, sufficient_basal_data, sufficient_carb_ratio_data, sufficient_sensitivity_data) += calculate_fraction(event, block)
 
-					if event.end_lnh == lnh and half_hour_block.range.contains_time(event.range.end, 0):
-
-						if event.type == EventType.INDEPENDENT:
-							fraction = 1.
-							if event.source == Source.TEST:
-								sufficient_basal_data += 1.
-						if event.type == EventType.BOLUS or event.type == EventType.CORRECTION:
-							fraction = 1./2.
-
-						if event.source == Source.SENSOR:
-							fraction *= 1./3.
-
-						contribution += fraction
-
-				if sufficient_basal_data >= 2:
-					contributions_string += "               " + str(lnh) + ": " + str(contribution) + "\n"
+				if (block.type == RatioType.BASAL and sufficient_basal_data >= 2) or \
+				   (block.type == RatioType.CARB_RATIO and sufficient_carb_ratio_data >= 2) or \
+				   (block.type == RatioType.SENSITIVITY and sufficient_sensitivity_data >= 2):
+					contributions_string += "               " + str(lnh) + ": " + str(fraction) + "\n"
 				else:
-					contributions_string += "               " + str(lnh) + ": " + str(contribution) + " INSUFFICIENT DATA \n"
+					contributions_string += "               " + str(lnh) + ": " + str(fraction) + " INSUFFICIENT DATA \n"
 
-				print_worthy += contribution
+				print_worthy += fraction
 
 		if block.range.end - block.range.start > 0.5 and print_worthy > 0:
 			contributions_string = contributions_string[:-1]
@@ -221,8 +224,10 @@ for block in basals:
 
 		print("      " + str(lnh) + ": " + str(fraction_contributions[lnh][block]))
 
-	if fraction_contributions[LowNormalHigh.NORMAL][block] < fraction_contributions[LowNormalHigh.LOW][block] and \
-	   fraction_contributions[LowNormalHigh.HIGH][block] < fraction_contributions[LowNormalHigh.LOW][block]:
+	printed_half_hour_block_contributions = False
+
+	if fraction_contributions[LowNormalHigh.NORMAL][block] <= fraction_contributions[LowNormalHigh.LOW][block] and \
+	   fraction_contributions[LowNormalHigh.HIGH][block] <= fraction_contributions[LowNormalHigh.LOW][block]:
 
 		if sufficient_data_contributions[lnh][block] >= 2 and \
 		   ((fraction_contributions[LowNormalHigh.HIGH][block] == 0 and \
@@ -235,18 +240,21 @@ for block in basals:
 			if fraction_contributions[LowNormalHigh.HIGH][block] > 0:
 				print("      => -" + str(fraction_contributions[LowNormalHigh.LOW][block]/fraction_contributions[LowNormalHigh.HIGH][block]))
 			print_half_hour_block_contributions(half_hours, block, events)
+			printed_half_hour_block_contributions = True
 
-	if fraction_contributions[LowNormalHigh.LOW][block] < fraction_contributions[LowNormalHigh.NORMAL][block] and \
-	   fraction_contributions[LowNormalHigh.HIGH][block] < fraction_contributions[LowNormalHigh.NORMAL][block]:
+	if fraction_contributions[LowNormalHigh.LOW][block] <= fraction_contributions[LowNormalHigh.NORMAL][block] and \
+	   fraction_contributions[LowNormalHigh.HIGH][block] <= fraction_contributions[LowNormalHigh.NORMAL][block]:
 
 		if sufficient_data_contributions[event.end_lnh][block] >= 2:
 			print("=> NORMAL")
 
 		else:
-			print_half_hour_block_contributions(half_hours, block, events)
+			if printed_half_hour_block_contributions == False:
+				print_half_hour_block_contributions(half_hours, block, events)
+				printed_half_hour_block_contributions = True
 
-	if fraction_contributions[LowNormalHigh.LOW][block] < fraction_contributions[LowNormalHigh.HIGH][block] and \
-	   fraction_contributions[LowNormalHigh.NORMAL][block] < fraction_contributions[LowNormalHigh.HIGH][block]:
+	if fraction_contributions[LowNormalHigh.LOW][block] <= fraction_contributions[LowNormalHigh.HIGH][block] and \
+	   fraction_contributions[LowNormalHigh.NORMAL][block] <= fraction_contributions[LowNormalHigh.HIGH][block]:
 
 		if sufficient_data_contributions[event.end_lnh][block] >= 2 and \
 		   ((fraction_contributions[LowNormalHigh.LOW][block] == 0 and \
@@ -258,7 +266,8 @@ for block in basals:
 		else:
 			if fraction_contributions[LowNormalHigh.LOW][block] > 0:
 				print("      => +" + str(fraction_contributions[LowNormalHigh.HIGH][block]/fraction_contributions[LowNormalHigh.LOW][block]))
-			print_half_hour_block_contributions(half_hours, block, events)
+			if printed_half_hour_block_contributions == False:
+				print_half_hour_block_contributions(half_hours, block, events)
 
 print("")
 
@@ -271,7 +280,7 @@ for block in carb_ratios:
 		if lnh == LowNormalHigh.OUT_OF_RANGE or lnh == LowNormalHigh.UNKNOWN:
 			continue
 
-		if sufficient_data_contributions[lnh][block] >= 1:
+		if sufficient_data_contributions[lnh][block] >= 2:
 			print("      " + str(lnh) + ": " + str(fraction_contributions[lnh][block]))
 		else:
 			print("      " + str(lnh) + ": " + str(fraction_contributions[lnh][block]) + " INSUFFICIENT DATA")
@@ -287,7 +296,7 @@ for block in sensitivities:
 		if lnh == LowNormalHigh.OUT_OF_RANGE or lnh == LowNormalHigh.UNKNOWN:
 			continue
 
-		if sufficient_data_contributions[lnh][block] >= 1:
+		if sufficient_data_contributions[lnh][block] >= 2:
 			print("      " + str(lnh) + ": " + str(fraction_contributions[lnh][block]))
 
 		else:
