@@ -1,4 +1,29 @@
-event_type,start_time,low_normal_high,start_glucose,end_time,low_normal_high,end_glucose,glucose_type,basal_or_sensitivity
-correction,12:15,high,200,13:00,low,60,test,sensitivity
-correction,12:20,high,200,14:00,low,60,test,sensitivity
-bolus,12:15,high,200,13:00,low,60,test,sensitivity
+event_type,start_time,low_normal_high,start_glucose,adjustment_time,end_time,low_normal_high,end_glucose,glucose_type
+bolus,07:05,high,,07:05,11:05,high,,test
+bolus,05:20,in range,135,07:15,09:20,low,110,test
+bolus,07:25,low,,07:25,11:25,in range,,test
+bolus,05:50,in range,100,07:50,09:50,high,120,test
+bolus,11:20,in range,,13:20,15:20,low,,sensor
+bolus,14:25,low,,14:25,18:25,in range,,sensor
+bolus,18:20,high,,18:45,22:20,high,,sensor
+bolus,21:20,high,,21:20,01:20,in range,,test
+bolus,21:40,high,,21:40,01:40,low,,test
+bolus,21:20,in range,,23:20,01:20,high,,sensor
+correction,02:15,high,,02:15,06:15,high,,test
+correction,07:05,high,,07:05,11:05,in range,,test
+correction,22:45,high,,22:45,02:45,low,,test
+independent,20:05,in range,,,00:05,low,,test
+independent,20:20,in range,,,00:20,high,,test
+independent,20:05,high,,,00:50,high,,sensor
+independent,21:25,high,,,01:25,low,,test
+independent,22:25,low,,,02:25,low,,test
+independent,20:35,,,,02:25,low,,sensor
+independent,23:40,low,,,03:40,high,,test
+independent,01:20,low,,,07:05,low,,sensor
+independent,01:10,in range,,,07:10,in range,,test
+independent,06:50,high,,,11:45,high,,test
+independent,14:20,,,,18:55,high,,sensor
+independent,14:30,high,,,19:00,low,,sensor
+independent,14:05,in range,,,19:25,low,,sensor
+independent,14:55,in range,,,19:40,high,,sensor
+independent,15:15,in range,,,21:10,in range,,sensor
