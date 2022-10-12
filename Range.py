@@ -55,6 +55,7 @@ class Range:
 	
 	
 
+	@staticmethod
 	def time_string(time):
 		hours = modf(time)[1]
 		hourFrac = modf(time)[0]
