@@ -69,30 +69,50 @@ def calculate_fraction(event, block):
 	return (fraction, sufficiency_for_changing_basals, sufficiency_for_changing_carb_ratios, sufficiency_for_changing_sensitivities)
 
 
-def print_and_analyze_block_contributions(block, half_hours, block_is_not_an_element_of_half_hours, events):
+def print_and_analyze_block_contributions(block, half_hours, block_is_a_ratio_block, events):
+
 
 	block_has_no_contributions = fraction_contributions[LowNormalHigh.LOW][block] == 0 and \
 	                             fraction_contributions[LowNormalHigh.NORMAL][block] == 0 and \
 	                             fraction_contributions[LowNormalHigh.HIGH][block] == 0
-	if block_has_no_contributions == False:
 
 
-		if block_is_not_an_element_of_half_hours:
-			block_string = "   "
+	if block_is_a_ratio_block:
+		block_string = "   "
+	else:
+		block_string = "         "
+
+	block_string = block_string + str(block.range) 
+	
+	if block_is_a_ratio_block:
+
+		if (block.type == RatioType.CARB_RATIO and block.ratio >= 10) or block.type == RatioType.SENSITIVITY:
+			ratio = int(block.ratio)
 		else:
-			block_string = "         "
+			ratio = block.ratio
 
-		block_string = block_string + str(block.range) + ":"
+		block_string = block_string + " = " + str(ratio)
 
+	block_string = block_string + ":"
+
+	if block_is_a_ratio_block:
 		print(block_string)
+
+		if block_has_no_contributions:
+			print("")
+
+	elif block_has_no_contributions == False:
+		print(block_string)
+
+
+	if block_has_no_contributions == False:
 
 
 		for lnh in LowNormalHigh:
 			if lnh == LowNormalHigh.OUT_OF_RANGE or lnh == LowNormalHigh.UNKNOWN:
 				continue
 
-
-			if block_is_not_an_element_of_half_hours:
+			if block_is_a_ratio_block:
 				contributions_string = "      "
 			else:
 				contributions_string = "            "
@@ -101,7 +121,7 @@ def print_and_analyze_block_contributions(block, half_hours, block_is_not_an_ele
 
 			if sufficiency_contributions[lnh][block] >= 1:
 				contributions_string = contributions_string + "   Sufficient Events"
-			elif block_is_not_an_element_of_half_hours == False and sufficiency_contributions[lnh][block] == 1/2:
+			elif block_is_a_ratio_block == False and sufficiency_contributions[lnh][block] == 1/2:
 				contributions_string = contributions_string + "   half sufficient event"
 
 			print(contributions_string)		
@@ -118,7 +138,7 @@ def print_and_analyze_block_contributions(block, half_hours, block_is_not_an_ele
 
 			if fraction_contributions[LowNormalHigh.HIGH][block] > 0:
 
-				if block_is_not_an_element_of_half_hours:
+				if block_is_a_ratio_block:
 					fraction_string = "      => -"
 				else:
 					fraction_string = "            => -"
@@ -145,7 +165,7 @@ def print_and_analyze_block_contributions(block, half_hours, block_is_not_an_ele
 
 			if fraction_contributions[LowNormalHigh.LOW][block] > 0:
 
-				if block_is_not_an_element_of_half_hours:
+				if block_is_a_ratio_block:
 					fraction_string = "      => +"
 				else:
 					fraction_string = "            => +"
@@ -156,8 +176,7 @@ def print_and_analyze_block_contributions(block, half_hours, block_is_not_an_ele
 				print(fraction_string)
 
 
-
-		if block_is_not_an_element_of_half_hours:
+		if block_is_a_ratio_block:
 
 			print_and_analyze_half_hour_block_contributions(block, half_hours, events)
 			print("")
@@ -170,7 +189,6 @@ def print_and_analyze_block_contributions(block, half_hours, block_is_not_an_ele
 				if lnh == LowNormalHigh.OUT_OF_RANGE or lnh == LowNormalHigh.UNKNOWN:
 					continue
 
-
 				if on_the_half_hour_sufficiency_contributions[lnh][block.range.end] >= 1:
 
 					if printed_half_hour == False:
@@ -178,7 +196,6 @@ def print_and_analyze_block_contributions(block, half_hours, block_is_not_an_ele
 						printed_half_hour == True
 
 					print("            " + str(lnh) + " -------------------   Sufficient Events")
-
 
 				elif on_the_half_hour_sufficiency_contributions[lnh][block.range.end] == 1/2:
 
