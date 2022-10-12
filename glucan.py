@@ -213,22 +213,10 @@ def print_and_analyze_block_contributions(block, half_hours, block_is_a_ratio_bl
 
 def print_and_analyze_half_hour_block_contributions(block, half_hours, events):
 
-	sufficient_events = False
+	for half_hour_block in half_hours:
 
-	for lnh in LowNormalHigh:
-		if lnh == LowNormalHigh.OUT_OF_RANGE or lnh == LowNormalHigh.UNKNOWN:
-			continue
-
-		if sufficiency_contributions[lnh][block] >= 1:
-			sufficient_events = True
-
-
-	if sufficient_events:
-
-		for half_hour_block in half_hours:
-
-				if block.range.overlap(half_hour_block.range) > 0 and block.range.end - block.range.start > 0.5:
-					print_and_analyze_block_contributions(half_hour_block, half_hours, False, events)
+			if block.range.overlap(half_hour_block.range) > 0 and block.range.end - block.range.start > 0.5:
+				print_and_analyze_block_contributions(half_hour_block, half_hours, False, events)
 			
 
 print("****************************************************************************************************")
