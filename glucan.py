@@ -72,6 +72,10 @@ def calculate_fraction(event, block):
 def print_and_analyze_block_contributions(block, half_hours, block_is_a_ratio_block, events):
 
 
+	block_has_sufficienct_events = sufficiency_contributions[LowNormalHigh.LOW][block] >= 1 or \
+	                               sufficiency_contributions[LowNormalHigh.NORMAL][block] >= 1 or \
+	                               sufficiency_contributions[LowNormalHigh.HIGH][block] >= 1
+
 	block_has_no_contributions = fraction_contributions[LowNormalHigh.LOW][block] == 0 and \
 	                             fraction_contributions[LowNormalHigh.NORMAL][block] == 0 and \
 	                             fraction_contributions[LowNormalHigh.HIGH][block] == 0
@@ -98,14 +102,15 @@ def print_and_analyze_block_contributions(block, half_hours, block_is_a_ratio_bl
 	if block_is_a_ratio_block:
 		print(block_string)
 
-		if block_has_no_contributions:
+		if block_has_sufficienct_events == False:
 			print("")
 
 	elif block_has_no_contributions == False:
 		print(block_string)
 
 
-	if block_has_no_contributions == False:
+	if (block_is_a_ratio_block and block_has_sufficienct_events) or \
+	   (block_is_a_ratio_block == False and block_has_no_contributions == False):
 
 
 		for lnh in LowNormalHigh:
