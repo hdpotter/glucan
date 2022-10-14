@@ -1,4 +1,5 @@
 from enum import Enum
+import numbers
 from pickle import FALSE
 
 from parse_input import *
@@ -69,7 +70,7 @@ def calculate_fraction(event, block):
 	return (fraction, sufficiency_for_changing_basals, sufficiency_for_changing_carb_ratios, sufficiency_for_changing_sensitivities)
 
 
-def print_and_analyze_block_contributions(block, half_hours, block_is_a_ratio_block, events):
+def print_and_analyze_block_contributions(block, block_is_a_ratio_block, events, half_hours):
 
 
 	block_has_sufficienct_events = sufficiency_contributions[LowNormalHigh.LOW][block] >= 1 or \
@@ -132,6 +133,8 @@ def print_and_analyze_block_contributions(block, half_hours, block_is_a_ratio_bl
 			print(contributions_string)		
 
 
+		fraction_string_exists = False
+
 		if fraction_contributions[LowNormalHigh.NORMAL][block] <= fraction_contributions[LowNormalHigh.LOW][block] and \
 		   fraction_contributions[LowNormalHigh.HIGH][block] < fraction_contributions[LowNormalHigh.LOW][block]:
 
@@ -144,14 +147,14 @@ def print_and_analyze_block_contributions(block, half_hours, block_is_a_ratio_bl
 			if fraction_contributions[LowNormalHigh.HIGH][block] > 0:
 
 				if block_is_a_ratio_block:
-					fraction_string = "      => -"
+					fraction_string = "      "
 				else:
-					fraction_string = "            => -"
+					fraction_string = "            "
 
-				fraction_string = fraction_string + \
+				fraction_string = fraction_string + "=> -" +\
 				                  str(fraction_contributions[LowNormalHigh.LOW][block]/fraction_contributions[LowNormalHigh.HIGH][block])
-
-				print(fraction_string)
+				
+				fraction_string_exists = True
 
 		if fraction_contributions[LowNormalHigh.LOW][block] < fraction_contributions[LowNormalHigh.NORMAL][block] and \
 		   fraction_contributions[LowNormalHigh.HIGH][block] < fraction_contributions[LowNormalHigh.NORMAL][block]:
@@ -171,14 +174,80 @@ def print_and_analyze_block_contributions(block, half_hours, block_is_a_ratio_bl
 			if fraction_contributions[LowNormalHigh.LOW][block] > 0:
 
 				if block_is_a_ratio_block:
-					fraction_string = "      => +"
+					fraction_string = "      "
 				else:
-					fraction_string = "            => +"
+					fraction_string = "            "
 
-				fraction_string = fraction_string + \
+				fraction_string = fraction_string + "=> +" + \
 				                  str(fraction_contributions[LowNormalHigh.HIGH][block]/fraction_contributions[LowNormalHigh.LOW][block])
 
-				print(fraction_string)
+				fraction_string_exists = True
+
+		if block.type == RatioType.CARB_RATIO and \
+		   (sufficiency_contributions[LowNormalHigh.LOW][block] >= 1.5 and \
+		    sufficiency_contributions[LowNormalHigh.HIGH][block] >= 1.5):
+			
+				sum_of_negative_changes = 0
+				number_of_calculatable_negative_changes = 0
+				number_of_uncalculatable_negative_changes = 0
+
+				number_of_changes = 0
+
+				sum_of_positive_changes = 0
+				number_of_calculatable_positive_changes = 0
+				number_of_uncalculatable_positive_changes = 0
+
+				for event in events:
+
+					if event.type == EventType.BOLUS and \
+					   block.range.contains_time(event.adjustment_time, False) and \
+					   event.start_lnh == LowNormalHigh.NORMAL and \
+					   event.source == Source.TEST:
+
+							if event.start_glucose != -1 and event.end_glucose != -1:
+
+								change = event.end_glucose-event.start_glucose
+
+								if change < 0:
+									sum_of_negative_changes += change
+									number_of_calculatable_negative_changes += 1
+
+								if change == 0:
+									number_of_changes += 1
+
+								if change > 0:
+									sum_of_positive_changes += change
+									number_of_calculatable_positive_changes += 1
+
+							else:
+
+								if event.end_lnh == LowNormalHigh.LOW:
+									number_of_uncalculatable_negative_changes += 1
+
+								if event.end_lnh == LowNormalHigh.HIGH:
+									number_of_uncalculatable_positive_changes += 1
+
+				average_negative_changes = sum_of_negative_changes/number_of_calculatable_negative_changes
+				average_positive_changes = sum_of_positive_changes/number_of_calculatable_positive_changes
+
+				sum_of_changes = sum_of_negative_changes + number_of_uncalculatable_negative_changes*average_negative_changes + \
+				                 number_of_changes*0 + \
+				                 sum_of_positive_changes + number_of_uncalculatable_positive_changes*average_positive_changes
+
+				number_of_changes = number_of_calculatable_negative_changes + number_of_uncalculatable_negative_changes + \
+				                    number_of_changes + \
+				                    number_of_calculatable_positive_changes + number_of_uncalculatable_positive_changes
+				
+				average_change = sum_of_changes/number_of_changes
+
+				if number_of_uncalculatable_negative_changes < number_of_calculatable_negative_changes and average_change < -25:
+					print("=> Low")
+
+				if number_of_uncalculatable_positive_changes < number_of_calculatable_positive_changes and average_change > 25:
+					print("=> High")
+
+		if fraction_string_exists:
+			print(fraction_string)
 
 
 		if block_is_a_ratio_block:
@@ -216,7 +285,7 @@ def print_and_analyze_half_hour_block_contributions(block, half_hours, events):
 	for half_hour_block in half_hours:
 
 			if block.range.overlap(half_hour_block.range) > 0 and block.range.end - block.range.start > 0.5:
-				print_and_analyze_block_contributions(half_hour_block, half_hours, False, events)
+				print_and_analyze_block_contributions(half_hour_block, False, events, half_hours)
 			
 
 print("****************************************************************************************************")
@@ -331,6 +400,8 @@ on_the_half_hour_sufficiency_contributions = {}
 
 
 for lnh in LowNormalHigh:
+	if lnh == LowNormalHigh.OUT_OF_RANGE or lnh == LowNormalHigh.UNKNOWN:
+		continue
 
 	fraction_contributions[lnh] = {}
 
@@ -426,7 +497,7 @@ for event in events:
 print("basals:")
 print("")
 for block in basals:
-	print_and_analyze_block_contributions(block, half_hour_basals, True, events)
+	print_and_analyze_block_contributions(block, True, events, half_hour_basals)
 
 print("")
 print("")
@@ -434,7 +505,7 @@ print("")
 print("carb ratios:")
 print("")
 for block in carb_ratios:
-	print_and_analyze_block_contributions(block, half_hour_carb_ratios, True, events)
+	print_and_analyze_block_contributions(block, True, events, half_hour_carb_ratios)
 
 print("")
 print("")
@@ -442,7 +513,7 @@ print("")
 print("sensitivities:")
 print("")
 for block in sensitivities:
-	print_and_analyze_block_contributions(block, half_hour_sensitivities, True, events)
+	print_and_analyze_block_contributions(block, True, events, half_hour_sensitivities)
 
 print("")
 print("")
