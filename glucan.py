@@ -1,3 +1,4 @@
+from cProfile import label
 from enum import Enum
 import numbers
 from pickle import FALSE
@@ -7,7 +8,168 @@ from RatioBlock import *
 from Event import *
 
 
-def calculate_fraction(event, block):
+
+print("****************************************************************************************************")
+print("This software is an experimental tool.")
+print("The author makes no guarantees about the correctness of its outputs or its suitability for any task.")
+print("****************************************************************************************************")
+print("")
+print("")
+
+# initializing blocks ...
+
+basals = parse_ratios("data/basals.csv", RatioType.BASAL)
+
+half_hour_basals = []
+uid = len(basals) + 1
+for hh in range(0, 48):
+	half_hour_basals.append(RatioBlock(
+		uid = uid, 
+		range = Range(start = float(hh)/2., end = float(hh)/2. + 0.5),
+	ratio = -1, # EDIT LATER!
+		type = RatioType.BASAL))
+	uid += 1
+
+
+carb_ratios = parse_ratios("data/carb_ratios.csv", RatioType.CARB_RATIO)
+
+half_hour_carb_ratios = []
+uid = len(carb_ratios) + 1
+for hh in range(0, 48):
+	half_hour_carb_ratios.append(RatioBlock(
+		uid = uid, 
+		range = Range(start = float(hh)/2., end = float(hh)/2. + 0.5),
+	ratio = -1, # EDIT LATER!
+		type = RatioType.CARB_RATIO))
+	uid += 1
+
+
+sensitivities = parse_ratios("data/sensitivities.csv", RatioType.SENSITIVITY)
+
+half_hour_sensitivities = []
+uid = len(sensitivities) + 1
+for hh in range(0, 48):
+	half_hour_sensitivities.append(RatioBlock(
+		uid = uid, 
+		range = Range(start = float(hh)/2., end = float(hh)/2. + 0.5),
+	ratio = -1, # EDIT LATER!
+		type = RatioType.SENSITIVITY))
+	uid += 1
+
+
+# ... and events
+
+events = parse_events("data/events.csv")
+
+
+# initializing intersections
+
+basals_impacting = {}
+half_hour_basals_impacting = {}
+
+carb_ratios_impacting = {}
+half_hour_carb_ratios_impacting = {}
+
+sensitivities_impacting = {}
+half_hour_sensitivities_impacting = {}
+
+
+for event in events:
+
+	basals_impacting[event] = []
+	half_hour_basals_impacting[event] = []
+
+	carb_ratios_impacting[event] = []
+	half_hour_carb_ratios_impacting[event] = []
+
+	sensitivities_impacting[event] = []
+	half_hour_sensitivities_impacting[event] = []
+
+
+	# calculating intersections
+
+	for block in basals:
+		if block.range.overlap(event.range) > 0:
+			basals_impacting[event].append(block)
+
+	for block in half_hour_basals:
+		if block.range.overlap(event.range) > 0:
+			half_hour_basals_impacting[event].append(block)
+
+
+	for block in carb_ratios:
+		if block.range.overlap(event.range) > 0:
+			carb_ratios_impacting[event].append(block)
+
+	for block in half_hour_carb_ratios:
+		if block.range.overlap(event.range) > 0:
+			half_hour_carb_ratios_impacting[event].append(block)
+
+
+	for block in sensitivities:
+		if block.range.overlap(event.range) > 0:
+			sensitivities_impacting[event].append(block)
+
+	for block in half_hour_sensitivities:
+		if block.range.overlap(event.range) > 0:
+			half_hour_sensitivities_impacting[event].append(block)
+
+
+# initializing contributions
+
+fraction_contributions = {}
+
+sufficiency_contributions = {}
+on_the_half_hour_sufficiency_contributions = {}
+
+
+for lnh in LowNormalHigh:
+	if lnh == LowNormalHigh.OUT_OF_RANGE or lnh == LowNormalHigh.UNKNOWN:
+		continue
+
+	fraction_contributions[lnh] = {}
+
+	sufficiency_contributions[lnh] = {}
+	on_the_half_hour_sufficiency_contributions[lnh] = {}
+
+
+	for block in basals:
+		fraction_contributions[lnh][block] = 0
+		sufficiency_contributions[lnh][block] = 0
+
+	for block in half_hour_basals:
+
+		fraction_contributions[lnh][block] = 0
+
+		sufficiency_contributions[lnh][block] = 0
+		on_the_half_hour_sufficiency_contributions[lnh][block.range.end] = 0
+
+
+	for block in carb_ratios:
+		fraction_contributions[lnh][block] = 0
+		sufficiency_contributions[lnh][block] = 0
+
+	for block in half_hour_carb_ratios:
+
+		fraction_contributions[lnh][block] = 0
+
+		sufficiency_contributions[lnh][block] = 0
+		on_the_half_hour_sufficiency_contributions[lnh][block.range.end] = 0
+
+
+	for block in sensitivities:
+		fraction_contributions[lnh][block] = 0
+		sufficiency_contributions[lnh][block] = 0
+
+	for block in half_hour_sensitivities:
+
+		fraction_contributions[lnh][block] = 0
+
+		sufficiency_contributions[lnh][block] = 0
+		on_the_half_hour_sufficiency_contributions[lnh][block.range.end] = 0
+
+
+def calculate_contributions(event, block):
 	overlap = block.range.overlap(event.range)
 	fraction = overlap / event.range.length()
 	sufficiency_for_changing_basals = 0
@@ -70,6 +232,54 @@ def calculate_fraction(event, block):
 	return (fraction, sufficiency_for_changing_basals, sufficiency_for_changing_carb_ratios, sufficiency_for_changing_sensitivities)
 
 
+# calculating contributions
+
+for event in events:
+
+
+	for block in basals_impacting[event]:
+		fraction_contributions[event.end_lnh][block] += calculate_contributions(event, block)[0]
+		sufficiency_contributions[event.end_lnh][block] += calculate_contributions(event, block)[1]
+
+	for block in half_hour_basals_impacting[event]:
+
+		fraction_contributions[event.end_lnh][block] += calculate_contributions(event, block)[0]
+
+		sufficiency_contributions[event.end_lnh][block] += calculate_contributions(event, block)[1]
+		if (block.range.end == event.range.end or block.range.end == event.range.end - 24) and event.source == Source.TEST:
+			on_the_half_hour_sufficiency_contributions[event.end_lnh][block.range.end] += 1/2
+
+
+	if(event.type == EventType.BOLUS):
+
+		for block in carb_ratios_impacting[event]:
+			fraction_contributions[event.end_lnh][block] += calculate_contributions(event, block)[0]
+			sufficiency_contributions[event.end_lnh][block] += calculate_contributions(event, block)[2]
+
+		for block in half_hour_carb_ratios_impacting[event]:
+
+			fraction_contributions[event.end_lnh][block] += calculate_contributions(event, block)[0]
+
+			sufficiency_contributions[event.end_lnh][block] += calculate_contributions(event, block)[2]
+			if (block.range.end == event.range.end or block.range.end == event.range.end - 24) and event.source == Source.TEST:
+				on_the_half_hour_sufficiency_contributions[event.end_lnh][block.range.end] += 1/2
+
+
+	if(event.type == EventType.CORRECTION or event.type == EventType.BOLUS):
+
+		for block in sensitivities_impacting[event]:
+			fraction_contributions[event.end_lnh][block] += calculate_contributions(event, block)[0]
+			sufficiency_contributions[event.end_lnh][block] += calculate_contributions(event, block)[3]
+
+		for block in half_hour_sensitivities_impacting[event]:
+
+			fraction_contributions[event.end_lnh][block] += calculate_contributions(event, block)[0]
+
+			sufficiency_contributions[event.end_lnh][block] += calculate_contributions(event, block)[3]
+			if (block.range.end == event.range.end or block.range.end == event.range.end - 24) and event.source == Source.TEST:
+				on_the_half_hour_sufficiency_contributions[event.end_lnh][block.range.end] += 1/2
+
+
 def print_and_analyze_block_contributions(block, block_is_a_ratio_block, events, half_hours):
 
 
@@ -81,6 +291,8 @@ def print_and_analyze_block_contributions(block, block_is_a_ratio_block, events,
 	                             fraction_contributions[LowNormalHigh.NORMAL][block] == 0 and \
 	                             fraction_contributions[LowNormalHigh.HIGH][block] == 0
 
+
+	# printing the block's range and ratio
 
 	if block_is_a_ratio_block:
 		block_string = "   "
@@ -110,9 +322,13 @@ def print_and_analyze_block_contributions(block, block_is_a_ratio_block, events,
 		print(block_string)
 
 
+	# determining if there is sufficient data to analyze
+
 	if (block_is_a_ratio_block and block_has_sufficienct_events) or \
 	   (block_is_a_ratio_block == False and block_has_no_contributions == False):
 
+
+		# printing the block's contributions
 
 		for lnh in LowNormalHigh:
 			if lnh == LowNormalHigh.OUT_OF_RANGE or lnh == LowNormalHigh.UNKNOWN:
@@ -125,6 +341,7 @@ def print_and_analyze_block_contributions(block, block_is_a_ratio_block, events,
 
 			contributions_string = contributions_string + str(lnh) + ": " + str(fraction_contributions[lnh][block])
 
+			# analyzing the block's contributions' sufficiency
 			if sufficiency_contributions[lnh][block] >= 1:
 				contributions_string = contributions_string + "   Sufficient Events"
 			elif block_is_a_ratio_block == False and sufficiency_contributions[lnh][block] == 1/2:
@@ -132,6 +349,8 @@ def print_and_analyze_block_contributions(block, block_is_a_ratio_block, events,
 
 			print(contributions_string)		
 
+
+		# analyzing the block's contri...
 
 		fraction_string_exists = False
 
@@ -183,6 +402,7 @@ def print_and_analyze_block_contributions(block, block_is_a_ratio_block, events,
 
 				fraction_string_exists = True
 
+		# analyzing the block's average carbohydrate-ratio-related change
 		if block.type == RatioType.CARB_RATIO and \
 		   (sufficiency_contributions[LowNormalHigh.LOW][block] >= 1.5 and \
 		    sufficiency_contributions[LowNormalHigh.HIGH][block] >= 1.5):
@@ -212,10 +432,10 @@ def print_and_analyze_block_contributions(block, block_is_a_ratio_block, events,
 									sum_of_negative_changes += change
 									number_of_calculatable_negative_changes += 1
 
-								if change == 0:
+								elif change == 0:
 									number_of_changes += 1
 
-								if change > 0:
+								elif change > 0:
 									sum_of_positive_changes += change
 									number_of_calculatable_positive_changes += 1
 
@@ -224,7 +444,7 @@ def print_and_analyze_block_contributions(block, block_is_a_ratio_block, events,
 								if event.end_lnh == LowNormalHigh.LOW:
 									number_of_uncalculatable_negative_changes += 1
 
-								if event.end_lnh == LowNormalHigh.HIGH:
+								elif event.end_lnh == LowNormalHigh.HIGH:
 									number_of_uncalculatable_positive_changes += 1
 
 				average_negative_changes = sum_of_negative_changes/number_of_calculatable_negative_changes
@@ -243,12 +463,16 @@ def print_and_analyze_block_contributions(block, block_is_a_ratio_block, events,
 				if number_of_uncalculatable_negative_changes < number_of_calculatable_negative_changes and average_change < -25:
 					print("=> Low")
 
-				if number_of_uncalculatable_positive_changes < number_of_calculatable_positive_changes and average_change > 25:
+				elif number_of_uncalculatable_positive_changes < number_of_calculatable_positive_changes and average_change > 25:
 					print("=> High")
+
+		# ...butions
 
 		if fraction_string_exists:
 			print(fraction_string)
 
+
+		# printing and analyzing the block's sub-blocks
 
 		if block_is_a_ratio_block:
 
@@ -286,213 +510,9 @@ def print_and_analyze_half_hour_block_contributions(block, half_hours, events):
 
 			if block.range.overlap(half_hour_block.range) > 0 and block.range.end - block.range.start > 0.5:
 				print_and_analyze_block_contributions(half_hour_block, False, events, half_hours)
-			
 
-print("****************************************************************************************************")
-print("This software is an experimental tool.")
-print("The author makes no guarantees about the correctness of its outputs or its suitability for any task.")
-print("****************************************************************************************************")
-print("")
-print("")
 
-# initialize blocks
-
-basals = parse_ratios("data/basals.csv", RatioType.BASAL)
-
-half_hour_basals = []
-uid = len(basals) + 1
-for hh in range(0, 48):
-	half_hour_basals.append(RatioBlock(
-		uid = uid, 
-		range = Range(start = float(hh)/2., end = float(hh)/2. + 0.5),
-	ratio = -1, # EDIT LATER!
-		type = RatioType.BASAL))
-	uid += 1
-
-
-carb_ratios = parse_ratios("data/carb_ratios.csv", RatioType.CARB_RATIO)
-
-half_hour_carb_ratios = []
-uid = len(carb_ratios) + 1
-for hh in range(0, 48):
-	half_hour_carb_ratios.append(RatioBlock(
-		uid = uid, 
-		range = Range(start = float(hh)/2., end = float(hh)/2. + 0.5),
-	ratio = -1, # EDIT LATER!
-		type = RatioType.CARB_RATIO))
-	uid += 1
-
-
-sensitivities = parse_ratios("data/sensitivities.csv", RatioType.SENSITIVITY)
-
-half_hour_sensitivities = []
-uid = len(sensitivities) + 1
-for hh in range(0, 48):
-	half_hour_sensitivities.append(RatioBlock(
-		uid = uid, 
-		range = Range(start = float(hh)/2., end = float(hh)/2. + 0.5),
-	ratio = -1, # EDIT LATER!
-		type = RatioType.SENSITIVITY))
-	uid += 1
-
-
-events = parse_events("data/events.csv")
-
-
-# initialize intersections
-
-basals_impacting = {}
-half_hour_basals_impacting = {}
-
-carb_ratios_impacting = {}
-half_hour_carb_ratios_impacting = {}
-
-sensitivities_impacting = {}
-half_hour_sensitivities_impacting = {}
-
-
-# calculate intersections
-for event in events:
-
-	basals_impacting[event] = []
-	half_hour_basals_impacting[event] = []
-
-	carb_ratios_impacting[event] = []
-	half_hour_carb_ratios_impacting[event] = []
-
-	sensitivities_impacting[event] = []
-	half_hour_sensitivities_impacting[event] = []
-
-
-	for block in basals:
-		if block.range.overlap(event.range) > 0:
-			basals_impacting[event].append(block)
-
-	for block in half_hour_basals:
-		if block.range.overlap(event.range) > 0:
-			half_hour_basals_impacting[event].append(block)
-
-
-	for block in carb_ratios:
-		if block.range.overlap(event.range) > 0:
-			carb_ratios_impacting[event].append(block)
-
-	for block in half_hour_carb_ratios:
-		if block.range.overlap(event.range) > 0:
-			half_hour_carb_ratios_impacting[event].append(block)
-
-
-	for block in sensitivities:
-		if block.range.overlap(event.range) > 0:
-			sensitivities_impacting[event].append(block)
-
-	for block in half_hour_sensitivities:
-		if block.range.overlap(event.range) > 0:
-			half_hour_sensitivities_impacting[event].append(block)
-
-
-# initialize contributions
-
-fraction_contributions = {}
-
-sufficiency_contributions = {}
-on_the_half_hour_sufficiency_contributions = {}
-
-
-for lnh in LowNormalHigh:
-	if lnh == LowNormalHigh.OUT_OF_RANGE or lnh == LowNormalHigh.UNKNOWN:
-		continue
-
-	fraction_contributions[lnh] = {}
-
-	sufficiency_contributions[lnh] = {}
-	on_the_half_hour_sufficiency_contributions[lnh] = {}
-
-
-	for block in basals:
-		fraction_contributions[lnh][block] = 0
-		sufficiency_contributions[lnh][block] = 0
-
-	for block in half_hour_basals:
-
-		fraction_contributions[lnh][block] = 0
-
-		sufficiency_contributions[lnh][block] = 0
-		on_the_half_hour_sufficiency_contributions[lnh][block.range.end] = 0
-
-
-	for block in carb_ratios:
-		fraction_contributions[lnh][block] = 0
-		sufficiency_contributions[lnh][block] = 0
-
-	for block in half_hour_carb_ratios:
-
-		fraction_contributions[lnh][block] = 0
-
-		sufficiency_contributions[lnh][block] = 0
-		on_the_half_hour_sufficiency_contributions[lnh][block.range.end] = 0
-
-
-	for block in sensitivities:
-		fraction_contributions[lnh][block] = 0
-		sufficiency_contributions[lnh][block] = 0
-
-	for block in half_hour_sensitivities:
-
-		fraction_contributions[lnh][block] = 0
-
-		sufficiency_contributions[lnh][block] = 0
-		on_the_half_hour_sufficiency_contributions[lnh][block.range.end] = 0
-
-
-# calculate contributions
-for event in events:
-
-
-	for block in basals_impacting[event]:
-		fraction_contributions[event.end_lnh][block] += calculate_fraction(event, block)[0]
-		sufficiency_contributions[event.end_lnh][block] += calculate_fraction(event, block)[1]
-
-	for block in half_hour_basals_impacting[event]:
-
-		fraction_contributions[event.end_lnh][block] += calculate_fraction(event, block)[0]
-
-		sufficiency_contributions[event.end_lnh][block] += calculate_fraction(event, block)[1]
-		if (block.range.end == event.range.end or block.range.end == event.range.end - 24) and event.source == Source.TEST:
-			on_the_half_hour_sufficiency_contributions[event.end_lnh][block.range.end] += 1/2
-
-
-	if(event.type == EventType.BOLUS):
-
-		for block in carb_ratios_impacting[event]:
-			fraction_contributions[event.end_lnh][block] += calculate_fraction(event, block)[0]
-			sufficiency_contributions[event.end_lnh][block] += calculate_fraction(event, block)[2]
-
-		for block in half_hour_carb_ratios_impacting[event]:
-
-			fraction_contributions[event.end_lnh][block] += calculate_fraction(event, block)[0]
-
-			sufficiency_contributions[event.end_lnh][block] += calculate_fraction(event, block)[2]
-			if (block.range.end == event.range.end or block.range.end == event.range.end - 24) and event.source == Source.TEST:
-				on_the_half_hour_sufficiency_contributions[event.end_lnh][block.range.end] += 1/2
-
-
-	if(event.type == EventType.CORRECTION or event.type == EventType.BOLUS):
-
-		for block in sensitivities_impacting[event]:
-			fraction_contributions[event.end_lnh][block] += calculate_fraction(event, block)[0]
-			sufficiency_contributions[event.end_lnh][block] += calculate_fraction(event, block)[3]
-
-		for block in half_hour_sensitivities_impacting[event]:
-
-			fraction_contributions[event.end_lnh][block] += calculate_fraction(event, block)[0]
-
-			sufficiency_contributions[event.end_lnh][block] += calculate_fraction(event, block)[3]
-			if (block.range.end == event.range.end or block.range.end == event.range.end - 24) and event.source == Source.TEST:
-				on_the_half_hour_sufficiency_contributions[event.end_lnh][block.range.end] += 1/2
-
-
-# print and analyze contributions
+# printing and analyzing contributions
 
 print("basals:")
 print("")
