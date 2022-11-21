@@ -43,7 +43,8 @@ class Range:
 		raise Exception("unhandled range overlap type: overlap(" + range1 + ", " + range2 + ")")
 
 	def contains_time(self, time, inclusive):
-		return Range.contains_time_no_wrap(self, time, inclusive) or Range.contains_time_no_wrap(self, time+24, inclusive)
+		return Range.contains_time_no_wrap(self, time, inclusive) or \
+		       Range.contains_time_no_wrap(self, time-24, inclusive) or Range.contains_time_no_wrap(self, time+24, inclusive)
 
 	@staticmethod
 	def contains_time_no_wrap(range, time, inclusive):
