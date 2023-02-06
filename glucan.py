@@ -164,7 +164,7 @@ on_the_half_hour_sufficiency_contributions = {}
 
 
 for lnh in LowNormalHigh:
-	if lnh == LowNormalHigh.OUT_OF_RANGE or lnh == LowNormalHigh.UNKNOWN:
+	if lnh == LowNormalHigh.UNKNOWN:
 		continue
 
 	fraction_contributions[lnh] = {}
@@ -231,8 +231,7 @@ def calculate_contributions(event, block, inclusive):
 				if event.start_lnh == LowNormalHigh.NORMAL:
 					fraction = 1./2.
 					sufficiency_for_changing_carb_ratios = 1/2
-				elif (event.start_lnh == LowNormalHigh.OUT_OF_RANGE or \
-				      event.start_lnh == LowNormalHigh.LOW or event.start_lnh == LowNormalHigh.HIGH):
+				elif (event.start_lnh == LowNormalHigh.LOW or event.start_lnh == LowNormalHigh.HIGH):
 					fraction = 1./4.
 				else:
 					fraction = 0
@@ -240,8 +239,7 @@ def calculate_contributions(event, block, inclusive):
 				fraction = 0
 		if block.type == RatioType.SENSITIVITY:
 			if block.range.contains_time(event.adjustment_time, inclusive) and \
-			   (event.start_lnh == LowNormalHigh.OUT_OF_RANGE or \
-			    event.start_lnh == LowNormalHigh.LOW or event.start_lnh == LowNormalHigh.HIGH):
+			   (event.start_lnh == LowNormalHigh.LOW or event.start_lnh == LowNormalHigh.HIGH):
 					fraction = 1./4.
 			else:
 				fraction = 0
@@ -312,9 +310,7 @@ for event in events:
 	if(event.type == EventType.CORRECTION or event.type == EventType.BOLUS):
 
 		for block in sensitivities_overlapping[event]:
-
 			fraction_contributions[event.end_lnh][block] += calculate_contributions(event, block, False)[0]
-
 			sufficiency_contributions[event.end_lnh][block] += calculate_contributions(event, block, False)[3]
 
 		for block in half_hour_sensitivities_overlapping[event]:
@@ -379,7 +375,7 @@ def print_and_analyze_block_contributions(block, block_is_a_ratio_block, events,
 		# printing the block's contributions
 
 		for lnh in LowNormalHigh:
-			if lnh == LowNormalHigh.OUT_OF_RANGE or lnh == LowNormalHigh.UNKNOWN:
+			if lnh == LowNormalHigh.UNKNOWN:
 				continue
 
 			if block_is_a_ratio_block:
@@ -530,7 +526,7 @@ def print_and_analyze_block_contributions(block, block_is_a_ratio_block, events,
 
 		for lnh in LowNormalHigh:
 
-			if lnh == LowNormalHigh.OUT_OF_RANGE or lnh == LowNormalHigh.UNKNOWN:
+			if lnh == LowNormalHigh.UNKNOWN:
 				continue
 
 			if on_the_half_hour_sufficiency_contributions[lnh][block] >= 1:

@@ -5,68 +5,75 @@ from Range import Range
 
 class EventType(Enum):
 	INDEPENDENT = 0
-	CORRECTION = 1
-	BOLUS = 2
+	BOLUS = 1
+	CORRECTION = 2
+	UNKNOWN = 3
+
 
 	@staticmethod
 	def parse(string):
 		if string == "independent":
 			return EventType.INDEPENDENT
-		if string == "correction":
-			return EventType.CORRECTION
-		if string == "bolus":
+		elif string == "bolus":
 			return EventType.BOLUS
-		raise Exception("unrecognized EventType " + string)
+		elif string == "correction":
+			return EventType.CORRECTION
+		else:
+			return EventType.UNKNOWN
+
+
 
 class LowNormalHigh(Enum):
 	LOW = 0
 	NORMAL = 1
 	HIGH = 2
 	UNKNOWN = 3
-	OUT_OF_RANGE = 4
+
 
 	@staticmethod
 	def parse(string):
-		if string == "in range":
-			return LowNormalHigh.NORMAL
-		if string == "out of range":
-			return LowNormalHigh.OUT_OF_RANGE
 		if string == "low":
 			return LowNormalHigh.LOW
-		if string == "high":
+		elif string == "in range":
+			return LowNormalHigh.NORMAL
+		elif string == "high":
 			return LowNormalHigh.HIGH
-		if string == "unknown" or string == "":
+		else:
 			return LowNormalHigh.UNKNOWN
-		raise Exception("unrecognized LowNormalHigh " + string)
+
 
 	def __str__(self):
-		if self == LowNormalHigh.OUT_OF_RANGE:
-			return "out of range"
 		if self == LowNormalHigh.LOW:
 			return "low"
 		if self == LowNormalHigh.NORMAL:
-			return "normal"
+			return "in range"
 		if self == LowNormalHigh.HIGH:
 			return "high"
 		if self == LowNormalHigh.UNKNOWN:
 			return "unknown"
 
+
+
 class Source(Enum):
 	SENSOR = 0
 	TEST = 1
+	UNKNOWN = 2
+
 
 	@staticmethod
 	def parse(string):
 		if string == "sensor":
 			return Source.SENSOR
-		if string == "test":
+		elif string == "test":
 			return Source.TEST
-		raise Exception("unrecognized Source " + string)
+		else:
+			return Source.UNKNOWN
 
 
-def parse_float_with_default(string, default):
+
+def parse_int_with_default(string, default):
 	try:
-		return float(string)
+		return int(string)
 	except:
 		return default
 
@@ -75,6 +82,8 @@ def parse_time_with_default(string, default):
 		return Range.parse_time(string)
 	except:
 		return default
+
+
 
 @dataclass
 class Event:
@@ -98,26 +107,91 @@ class Event:
 		while len(tokens) < 9:
 			tokens.append("")
 
-		# parse fields
+		# parsing entries
 		event_type = EventType.parse(tokens[0])
-		start_time = Range.parse_time(tokens[1])
+		start_time = parse_time_with_default(tokens[1], -1)
 		start_lnh = LowNormalHigh.parse(tokens[2])
-		start_glucose = parse_float_with_default(tokens[3], -1)
+		start_glucose = parse_int_with_default(tokens[3], -1)
 		adjustment_time = parse_time_with_default(tokens[4], -1)
-		end_time = Range.parse_time(tokens[5])
+		end_time = parse_time_with_default(tokens[5], -1)
 		end_lnh = LowNormalHigh.parse(tokens[6])
-		end_glucose = parse_float_with_default(tokens[7], -1)
+		end_glucose = parse_int_with_default(tokens[7], -1)
 		source = Source.parse(tokens[8])
-	
-		# make range compliant
-		if(end_time < start_time):
-			print("adding 24h to time because range contains midnight")
+
+
+		# making range compliant
+
+		if end_time != -1 and end_time < start_time:
 			end_time += 24.
 
 		range = Range(start = start_time, end = end_time)
-		
-		if adjustment_time >= 0 and not range.contains_time(adjustment_time, True):
-			raise Exception("adjustment time is not within time range")
+
+
+		# making event_string
+
+		event_string = ""
+
+		if adjustment_time != -1:
+			event_string = event_string + str(adjustment_time) + " "
+
+		if event_type == EventType.INDEPENDENT:
+			event_string = event_string + "independent event "
+		elif event_type == EventType.BOLUS:
+			event_string = event_string + "bolus "
+		elif event_type == EventType.CORRECTION:
+			event_string = event_string + "correction "
+		elif event_type == EventType.UNKNOWN:
+			event_string = event_string + "event "
+
+		event_string = event_string + "starting with a(n) " + str(start_lnh) + " blood glucose "
+
+		if start_glucose != -1:
+			event_string = event_string + "of " + str(start_glucose) + " mg/dL "
+
+		if start_time != -1:
+			event_string = event_string + "at " + str(start_time) + " "	
+
+		event_string = event_string + "and ending with a(n) " + str(end_lnh) + " blood glucose "		
+
+		if end_glucose != -1:
+			event_string = event_string + "of " + str(end_glucose) + " mg/dL "
+
+		if end_time != -1:
+			event_string = event_string + "at " + str(end_time) + " "	
+
+
+		# printing alerts or raising exceptions in order to get more useful event entries
+
+		if event_type == EventType.UNKNOWN:
+			raise Exception("The " + event_string + "has an unknown event type.")
+
+		if start_time == -1: 
+			raise Exception("The " + event_string + "has an unknown start time.")
+
+		if start_lnh == LowNormalHigh.UNKNOWN and event_type == EventType.BOLUS:
+			raise Exception("The " + event_string + "has an unknown starting LowNormalHigh.")
+
+		if start_glucose == -1 and event_type == EventType.BOLUS and start_lnh == LowNormalHigh.NORMAL and source == Source.TEST:
+			print("The " + event_string + "has an unknown start glucose.")
+
+		if adjustment_time == -1 and (event_type == EventType.BOLUS or event_type == EventType.CORRECTION):
+			raise Exception("The " + event_string + "has an unknown adjustment time.")
+
+		if end_time == -1:
+			raise Exception("The " + event_string + "has an unknown end time.")
+
+		if adjustment_time != -1 and not range.contains_time(adjustment_time, True):
+			raise Exception("The adjustment time of the " + event_string + "isn't a part of its range.")
+
+		if end_lnh == LowNormalHigh.UNKNOWN:
+			raise Exception("The " + event_string + "has an unknown ending LowNormalHigh.")
+
+		if end_glucose == -1 and event_type == EventType.BOLUS and start_lnh == LowNormalHigh.NORMAL and source == Source.TEST:
+			print("The " + event_string + "has an unknown end glucose.")
+
+		if source == Source.UNKNOWN:
+			raise Exception("The " + event_string + "has an unknown source.")
+
 
 		return Event( \
 			uid = uid, \
@@ -131,11 +205,10 @@ class Event:
 			range = range
 			)
 
+
+
 	def __hash__(self):
 		return self.uid.__hash__()
 
 	def __eq__(self, other):
 		return self.uid.__eq__(other)
-
-
-
