@@ -53,27 +53,49 @@ def parse_events(filepath):
 		lines.append(line[:-1])
 
 	firstTokens = lines[0].split(",")
-	if(len(firstTokens) != 9 or
-		firstTokens[0] != "event_type" or
-		firstTokens[1] != "start_time" or
-		firstTokens[2] != "low_normal_high" or
-		firstTokens[3] != "start_glucose" or
-		firstTokens[4] != "adjustment_time" or
-		firstTokens[5] != "end_time" or
-		firstTokens[6] != "low_normal_high" or
-		firstTokens[7] != "end_glucose" or
-		firstTokens[8] != "glucose_type"
+	if ( len(firstTokens) != 10 or
+	     firstTokens[0] != "independent_bolus_or_correction" or
+	     firstTokens[1] != "start_time" or
+	     firstTokens[2] != "start_ low_in_range_or_high" or
+	     firstTokens[3] != "start_ blood_glucose" or
+	     firstTokens[4] != "adjustment_time" or
+	     firstTokens[5] != "end_time" or
+	     firstTokens[6] != "end_time_ sensor_or_test" or		
+	     firstTokens[7] != "end_ low_in_range_or_high" or
+	     firstTokens[8] != "end_low_in_range_or_high_ test_or_sensor" or
+	     firstTokens[9] != "end_ blood_glucose"
 		):
-		raise Exception("first line of events must be event_type | Start_Time | Start_Range | Start_Glucose | adjustment_time | end_time | low_normal_high | glucose | glucose_type")
+		raise Exception \
+("The first line of events.csv should be \
+| independent_bolus_or_correction \
+| start_time | start_ low_in_range_or_high | start_ blood_glucose \
+| adjustment_time \
+| end_time | end_time_ sensor_or_test \
+| end_ low_in_range_or_high | end_low_in_range_or_high_ test_or_sensor \
+| end_ blood_glucose |.")
+
 
 	events = []
 	uid = 0
+	printed_alert = False
+
 	for line in lines[1:]:
 		if(line.isspace()):
 			continue
 
-		events.append(Event.Parse(line, uid))
+		event = Event.Parse(line, uid)
+
+		events.append(event)
+
+		if event.printed_alert == True:
+			printed_alert = True
+	
 		uid += 1
+
+	if printed_alert == True:
+		print("")
+		print("")
+
 
 	return events
 

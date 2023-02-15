@@ -91,33 +91,40 @@ class Event:
 	type: EventType
 	range: Range
 	start_lnh: LowNormalHigh
-	start_glucose: float
+	start_bg: int
 	adjustment_time: float
+	end_time_source: Source
 	end_lnh: LowNormalHigh
-	end_glucose: float
-	source: Source
-	
+	end_lnh_source: Source
+	end_bg: int
+	printed_alert: bool
+
+
 	@staticmethod
 	def Parse(line, uid):
+
 		tokens = line.split(",")
 
-		# ensure correct length
-		if(len(tokens) > 9):
-			raise Exception("too many entries on line " + line + " of events")
-		while len(tokens) < 9:
+		if(len(tokens) != 10):
+			raise Exception("Line " + line + " of events.csv doesn't have ten entries.")
+
+		# ensuring empty columns after the final entry in a line are parsed
+		while len(tokens) < 10:
 			tokens.append("")
+
 
 		# parsing entries
 		event_type = EventType.parse(tokens[0])
 		start_time = parse_time_with_default(tokens[1], -1)
 		start_lnh = LowNormalHigh.parse(tokens[2])
-		start_glucose = parse_int_with_default(tokens[3], -1)
+		start_bg = parse_int_with_default(tokens[3], -1)
 		adjustment_time = parse_time_with_default(tokens[4], -1)
 		end_time = parse_time_with_default(tokens[5], -1)
-		end_lnh = LowNormalHigh.parse(tokens[6])
-		end_glucose = parse_int_with_default(tokens[7], -1)
-		source = Source.parse(tokens[8])
-
+		end_time_source = Source.parse(tokens[6])
+		end_lnh = LowNormalHigh.parse(tokens[7])
+		end_lnh_source = Source.parse(tokens[8])
+		end_bg = parse_int_with_default(tokens[9], -1)
+		
 
 		# making range compliant
 
@@ -145,22 +152,25 @@ class Event:
 
 		event_string = event_string + "starting with a(n) " + str(start_lnh) + " blood glucose "
 
-		if start_glucose != -1:
-			event_string = event_string + "of " + str(start_glucose) + " mg/dL "
+		if start_bg != -1:
+			event_string = event_string + "of " + str(start_bg) + " mg/dL "
 
 		if start_time != -1:
 			event_string = event_string + "at " + str(start_time) + " "	
 
 		event_string = event_string + "and ending with a(n) " + str(end_lnh) + " blood glucose "		
 
-		if end_glucose != -1:
-			event_string = event_string + "of " + str(end_glucose) + " mg/dL "
+		if end_bg != -1:
+			event_string = event_string + "of " + str(end_bg) + " mg/dL "
 
 		if end_time != -1:
 			event_string = event_string + "at " + str(end_time) + " "	
 
 
 		# printing alerts or raising exceptions in order to get more useful event entries
+
+		printed_alert = False
+
 
 		if event_type == EventType.UNKNOWN:
 			raise Exception("The " + event_string + "has an unknown event type.")
@@ -169,10 +179,14 @@ class Event:
 			raise Exception("The " + event_string + "has an unknown start time.")
 
 		if start_lnh == LowNormalHigh.UNKNOWN and event_type == EventType.BOLUS:
-			raise Exception("The " + event_string + "has an unknown starting LowNormalHigh.")
+			raise Exception("The " + event_string + "has an unknown start LowNormalHigh.")
 
-		if start_glucose == -1 and event_type == EventType.BOLUS and start_lnh == LowNormalHigh.NORMAL and source == Source.TEST:
+		if start_bg == -1 and event_type == EventType.BOLUS and start_lnh == LowNormalHigh.NORMAL and end_lnh_source == Source.TEST:
+
 			print("The " + event_string + "has an unknown start glucose.")
+			print("")
+
+			printed_alert = True
 
 		if adjustment_time == -1 and (event_type == EventType.BOLUS or event_type == EventType.CORRECTION):
 			raise Exception("The " + event_string + "has an unknown adjustment time.")
@@ -183,27 +197,47 @@ class Event:
 		if adjustment_time != -1 and not range.contains_time(adjustment_time, True):
 			raise Exception("The adjustment time of the " + event_string + "isn't a part of its range.")
 
+		if end_time_source == Source.UNKNOWN:
+
+			print("The " + event_string + "has an unknown end time source.")
+			print("")
+
+			printed_alert = True
+
+			end_time_source = Source.TEST
+
 		if end_lnh == LowNormalHigh.UNKNOWN:
-			raise Exception("The " + event_string + "has an unknown ending LowNormalHigh.")
+			raise Exception("The " + event_string + "has an unknown end LowNormalHigh.")
 
-		if end_glucose == -1 and event_type == EventType.BOLUS and start_lnh == LowNormalHigh.NORMAL and source == Source.TEST:
+		if end_lnh_source == Source.UNKNOWN:
+
+			print("The " + event_string + "has an unknown end LowNormalHigh source.")
+			print("")
+
+			printed_alert = True
+
+			end_lnh_source = Source.SENSOR
+
+		if end_bg == -1 and event_type == EventType.BOLUS and start_lnh == LowNormalHigh.NORMAL and end_lnh_source == Source.TEST:
+
 			print("The " + event_string + "has an unknown end glucose.")
+			print("")
 
-		if source == Source.UNKNOWN:
-			raise Exception("The " + event_string + "has an unknown source.")
+			printed_alert = True
 
 
 		return Event( \
 			uid = uid, \
 			type = event_type, \
 			start_lnh = start_lnh, \
-			start_glucose = start_glucose, \
+			start_bg = start_bg, \
 			adjustment_time = adjustment_time, \
+			end_time_source = end_time_source, \
 			end_lnh = end_lnh, \
-			end_glucose = end_glucose, \
-			source = source, \
-			range = range
-			)
+			end_lnh_source = end_lnh_source, \
+			end_bg = end_bg, \
+			range = range, \
+			printed_alert = printed_alert )
 
 
 

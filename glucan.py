@@ -15,6 +15,7 @@ print("The author makes no guarantees about the correctness of its outputs or it
 print("****************************************************************************************************")
 print("")
 print("")
+print("")
 
 # initializing blocks ...
 
@@ -261,7 +262,7 @@ def calculate_contributions(event, block, inclusive):
 	else:
 		fraction = 0
 
-	if event.source == Source.SENSOR:
+	if event.end_lnh_source == Source.SENSOR:
 		fraction *= 1./3.
 		sufficiency_for_changing_basals = 0
 		sufficiency_for_changing_carb_ratios = 0
@@ -465,9 +466,9 @@ def print_and_analyze_block_contributions(block, block_is_a_ratio_block, events,
 
 					if calculate_contributions(event, block, False)[2] == 1/2:
 
-						if event.start_glucose != -1 and event.end_glucose != -1:
+						if event.start_bg != -1 and event.end_bg != -1:
 
-							change = event.end_glucose-event.start_glucose
+							change = event.end_bg-event.start_bg
 
 							if change < 0:
 								sum_of_negative_changes += change
