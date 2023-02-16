@@ -219,32 +219,38 @@ def calculate_contributions(event, block, inclusive):
 
 	if event.type == EventType.INDEPENDENT:
 		if block.type == RatioType.BASAL:
-			if block.range.contains_time(event.range.end, inclusive):
-				sufficiency_for_changing_basals = 1/2
+
+			if block.range.contains_time(event.range.end, inclusive) and \
+			   event.end_time_source == Source.SENSOR and event.end_lnh_source == Source.TEST:
+					sufficiency_for_changing_basals = 1/2
+
 		else:
 			fraction = 0
 
 	elif event.type == EventType.BOLUS:
 		if block.type == RatioType.BASAL:
 			fraction *= 1./2.  
-		if block.type == RatioType.CARB_RATIO:
+		elif block.type == RatioType.CARB_RATIO:
 			if block.range.contains_time(event.adjustment_time, inclusive):
 				if event.start_lnh == LowNormalHigh.NORMAL:
 					fraction = 1./2.
-					sufficiency_for_changing_carb_ratios = 1/2
+
+					if event.end_lnh_source == Source.TEST:
+						sufficiency_for_changing_carb_ratios = 1/2
+
 				elif (event.start_lnh == LowNormalHigh.LOW or event.start_lnh == LowNormalHigh.HIGH):
 					fraction = 1./4.
 				else:
 					fraction = 0
 			else:
 				fraction = 0
-		if block.type == RatioType.SENSITIVITY:
+		elif block.type == RatioType.SENSITIVITY:
 			if block.range.contains_time(event.adjustment_time, inclusive) and \
 			   (event.start_lnh == LowNormalHigh.LOW or event.start_lnh == LowNormalHigh.HIGH):
 					fraction = 1./4.
 			else:
 				fraction = 0
-		if block.type != RatioType.BASAL and block.type != RatioType.CARB_RATIO and block.type != RatioType.SENSITIVITY:
+		else:
 			fraction = 0
 
 	elif event.type == EventType.CORRECTION:
@@ -253,7 +259,10 @@ def calculate_contributions(event, block, inclusive):
 		elif block.type == RatioType.SENSITIVITY:
 			if block.range.contains_time(event.adjustment_time, inclusive):
 				fraction = 1./2.
-				sufficiency_for_changing_sensitivities = 1/2
+
+				if event.end_lnh_source == Source.TEST:
+					sufficiency_for_changing_sensitivities = 1/2
+
 			else:
 				fraction = 0
 		else:
@@ -262,11 +271,8 @@ def calculate_contributions(event, block, inclusive):
 	else:
 		fraction = 0
 
-	if event.end_lnh_source == Source.SENSOR:
+	if event.end_lnh_source != Source.TEST:
 		fraction *= 1./3.
-		sufficiency_for_changing_basals = 0
-		sufficiency_for_changing_carb_ratios = 0
-		sufficiency_for_changing_sensitivities = 0
 
 	return (fraction, sufficiency_for_changing_basals, sufficiency_for_changing_carb_ratios, sufficiency_for_changing_sensitivities)
 
