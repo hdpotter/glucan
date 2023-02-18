@@ -101,7 +101,7 @@ class Event:
 
 
 	@staticmethod
-	def Parse(line, uid):
+	def parse(line, uid):
 
 		tokens = line.split(",")
 

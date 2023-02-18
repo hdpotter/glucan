@@ -44,7 +44,7 @@ class Range:
 			return b.end - a.start
 
 		# leave this in here to catch if our logic above was wrong
-		raise Exception("unhandled range overlap type: overlap(" + range1 + ", " + range2 + ")")
+		raise Exception("unhandled range overlap type: overlap(" + a + ", " + b + ")")
 
 	def contains_time(self, time, inclusive):
 		return Range.contains_time_no_wrap(self, time, inclusive) or \
@@ -52,13 +52,10 @@ class Range:
 
 	@staticmethod
 	def contains_time_no_wrap(range, time, inclusive):
-                if inclusive:
-                        return time >= range.start and time <= range.end
-                else:
-                        return time > range.start and time < range.end
-
-	
-	
+		if inclusive:
+			return time >= range.start and time <= range.end
+		else:
+			return time > range.start and time < range.end
 
 	@staticmethod
 	def time_string(time):
@@ -90,8 +87,3 @@ class Range:
 		minutes = int(tokens[1])
 
 		return float(hours) + float(minutes)/60.
-
-
-
-# range = Range(0, 1)
-# print(range.timeshift())

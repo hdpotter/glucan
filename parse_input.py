@@ -1,5 +1,3 @@
-from math import modf
-
 from Event import Event
 from Range import Range
 from RatioBlock import RatioBlock
@@ -83,7 +81,7 @@ def parse_events(filepath):
 		if(line.isspace()):
 			continue
 
-		event = Event.Parse(line, uid)
+		event = Event.parse(line, uid)
 
 		events.append(event)
 
@@ -103,6 +101,3 @@ def parse_events(filepath):
 # events = parse_events("example_input/events.csv")
 # for event  in events:
 # 	print(event)
-
-
-
