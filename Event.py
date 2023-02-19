@@ -218,7 +218,8 @@ class Event:
 
 			end_lnh_source = Source.SENSOR
 
-		if end_bg == -1 and event_type == EventType.BOLUS and start_lnh == LowNormalHigh.NORMAL and end_lnh_source == Source.TEST:
+		if end_bg == -1 and \
+		   event_type == EventType.BOLUS and start_lnh == LowNormalHigh.NORMAL and end_time - adjustment_time >= 2 and end_lnh_source == Source.TEST:
 
 			print("The " + event_string + "has an unknown end glucose.")
 			print("")
