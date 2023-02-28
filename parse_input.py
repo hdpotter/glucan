@@ -60,7 +60,7 @@ def parse_events(filepath):
 	     firstTokens[5] != "end_time" or
 	     firstTokens[6] != "end_time_ sensor_or_test" or		
 	     firstTokens[7] != "end_ low_in_range_or_high" or
-	     firstTokens[8] != "end_low_in_range_or_high_ test_or_sensor" or
+	     firstTokens[8] != "end_level_ test_or_sensor" or
 	     firstTokens[9] != "end_ blood_glucose"
 		):
 		raise Exception \
@@ -69,7 +69,7 @@ def parse_events(filepath):
 | start_time | start_ low_in_range_or_high | start_ blood_glucose \
 | adjustment_time \
 | end_time | end_time_ sensor_or_test \
-| end_ low_in_range_or_high | end_low_in_range_or_high_ test_or_sensor \
+| end_ low_in_range_or_high | end_level_ test_or_sensor \
 | end_ blood_glucose |.")
 
 

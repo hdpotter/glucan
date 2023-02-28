@@ -1,7 +1,7 @@
 from pickle import FALSE
 
 from calculate_contributions import calculate_contributions
-from Event import EventType, LowNormalHigh
+from Event import EventType, Level
 from parse_input import parse_events, parse_ratios
 from Range import Range
 from RatioBlock import RatioBlock, RatioType
@@ -155,50 +155,50 @@ sufficiency_contributions = {}
 on_the_half_hour_sufficiency_contributions = {}
 
 
-for lnh in LowNormalHigh:
-	if lnh == LowNormalHigh.UNKNOWN:
+for level in Level:
+	if level == Level.UNKNOWN:
 		continue
 
-	fraction_contributions[lnh] = {}
+	fraction_contributions[level] = {}
 
-	sufficiency_contributions[lnh] = {}
-	on_the_half_hour_sufficiency_contributions[lnh] = {}
+	sufficiency_contributions[level] = {}
+	on_the_half_hour_sufficiency_contributions[level] = {}
 
 
 	for block in basals:
-		fraction_contributions[lnh][block] = 0
-		sufficiency_contributions[lnh][block] = 0
+		fraction_contributions[level][block] = 0
+		sufficiency_contributions[level][block] = 0
 
 	for block in half_hour_basals:
 
-		fraction_contributions[lnh][block] = 0
+		fraction_contributions[level][block] = 0
 
-		sufficiency_contributions[lnh][block] = 0
-		on_the_half_hour_sufficiency_contributions[lnh][block] = 0
+		sufficiency_contributions[level][block] = 0
+		on_the_half_hour_sufficiency_contributions[level][block] = 0
 
 
 	for block in carb_ratios:
-		fraction_contributions[lnh][block] = 0
-		sufficiency_contributions[lnh][block] = 0
+		fraction_contributions[level][block] = 0
+		sufficiency_contributions[level][block] = 0
 
 	for block in half_hour_carb_ratios:
 
-		fraction_contributions[lnh][block] = 0
+		fraction_contributions[level][block] = 0
 
-		sufficiency_contributions[lnh][block] = 0
-		on_the_half_hour_sufficiency_contributions[lnh][block] = 0
+		sufficiency_contributions[level][block] = 0
+		on_the_half_hour_sufficiency_contributions[level][block] = 0
 
 
 	for block in sensitivities:
-		fraction_contributions[lnh][block] = 0
-		sufficiency_contributions[lnh][block] = 0
+		fraction_contributions[level][block] = 0
+		sufficiency_contributions[level][block] = 0
 
 	for block in half_hour_sensitivities:
 
-		fraction_contributions[lnh][block] = 0
+		fraction_contributions[level][block] = 0
 
-		sufficiency_contributions[lnh][block] = 0
-		on_the_half_hour_sufficiency_contributions[lnh][block] = 0
+		sufficiency_contributions[level][block] = 0
+		on_the_half_hour_sufficiency_contributions[level][block] = 0
 
 
 # summing contributions
@@ -207,49 +207,49 @@ for event in events:
 
 
 	for block in basals_overlapping[event]:
-		fraction_contributions[event.end_lnh][block] += calculate_contributions(event, block, False)[0]
-		sufficiency_contributions[event.end_lnh][block] += calculate_contributions(event, block, False)[1]
+		fraction_contributions[event.end_level][block] += calculate_contributions(event, block, False)[0]
+		sufficiency_contributions[event.end_level][block] += calculate_contributions(event, block, False)[1]
 
 	for block in half_hour_basals_overlapping[event]:
 
-		fraction_contributions[event.end_lnh][block] += calculate_contributions(event, block, False)[0]
+		fraction_contributions[event.end_level][block] += calculate_contributions(event, block, False)[0]
 
-		sufficiency_contributions[event.end_lnh][block] += calculate_contributions(event, block, False)[1]
+		sufficiency_contributions[event.end_level][block] += calculate_contributions(event, block, False)[1]
 	for block in half_hour_basals_touching[event]:
 		if event.range.end not in basal_starts and \
 		   (block.range.end == event.range.end or block.range.end == event.range.end - 24):
-				on_the_half_hour_sufficiency_contributions[event.end_lnh][block] += calculate_contributions(event, block, True)[1]
+				on_the_half_hour_sufficiency_contributions[event.end_level][block] += calculate_contributions(event, block, True)[1]
 
 
 	if(event.type == EventType.BOLUS):
 
 		for block in carb_ratios_overlapping[event]:
-			fraction_contributions[event.end_lnh][block] += calculate_contributions(event, block, False)[0]
-			sufficiency_contributions[event.end_lnh][block] += calculate_contributions(event, block, False)[2]
+			fraction_contributions[event.end_level][block] += calculate_contributions(event, block, False)[0]
+			sufficiency_contributions[event.end_level][block] += calculate_contributions(event, block, False)[2]
 
 		for block in half_hour_carb_ratios_overlapping[event]:
 
-			fraction_contributions[event.end_lnh][block] += calculate_contributions(event, block, False)[0]
+			fraction_contributions[event.end_level][block] += calculate_contributions(event, block, False)[0]
 
-			sufficiency_contributions[event.end_lnh][block] += calculate_contributions(event, block, False)[2]
+			sufficiency_contributions[event.end_level][block] += calculate_contributions(event, block, False)[2]
 		for block in half_hour_carb_ratios_touching[event]:
 			if event.adjustment_time not in carb_ratio_starts and \
 			   (block.range.end == event.adjustment_time or block.range.end == event.adjustment_time - 24):
-					on_the_half_hour_sufficiency_contributions[event.end_lnh][block] += calculate_contributions(event, block, True)[2]
+					on_the_half_hour_sufficiency_contributions[event.end_level][block] += calculate_contributions(event, block, True)[2]
 
 
 	if(event.type == EventType.CORRECTION or event.type == EventType.BOLUS):
 
 		for block in sensitivities_overlapping[event]:
-			fraction_contributions[event.end_lnh][block] += calculate_contributions(event, block, False)[0]
-			sufficiency_contributions[event.end_lnh][block] += calculate_contributions(event, block, False)[3]
+			fraction_contributions[event.end_level][block] += calculate_contributions(event, block, False)[0]
+			sufficiency_contributions[event.end_level][block] += calculate_contributions(event, block, False)[3]
 
 		for block in half_hour_sensitivities_overlapping[event]:
 
-			fraction_contributions[event.end_lnh][block] += calculate_contributions(event, block, False)[0]
+			fraction_contributions[event.end_level][block] += calculate_contributions(event, block, False)[0]
 
-			sufficiency_contributions[event.end_lnh][block] += calculate_contributions(event, block, False)[3]
+			sufficiency_contributions[event.end_level][block] += calculate_contributions(event, block, False)[3]
 		for block in half_hour_sensitivities_touching[event]:
 			if event.adjustment_time not in sensitivity_starts and \
 			   (block.range.end == event.adjustment_time or block.range.end == event.adjustment_time - 24):
-					on_the_half_hour_sufficiency_contributions[event.end_lnh][block] += calculate_contributions(event, block, True)[3]
+					on_the_half_hour_sufficiency_contributions[event.end_level][block] += calculate_contributions(event, block, True)[3]

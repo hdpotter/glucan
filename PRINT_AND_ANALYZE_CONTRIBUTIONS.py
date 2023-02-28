@@ -1,5 +1,5 @@
 from calculate_contributions import calculate_contributions
-from Event import LowNormalHigh
+from Event import Level
 from sum_contributions import *
 from RatioBlock import RatioType
 
@@ -18,13 +18,13 @@ print("")
 def print_and_analyze_block_contributions(block, block_is_a_ratio_block, events, half_hours):
 
 
-	block_has_sufficienct_events = sufficiency_contributions[LowNormalHigh.LOW][block] >= 1 or \
-	                               sufficiency_contributions[LowNormalHigh.NORMAL][block] >= 1 or \
-	                               sufficiency_contributions[LowNormalHigh.HIGH][block] >= 1
+	block_has_sufficienct_events = sufficiency_contributions[Level.LOW][block] >= 1 or \
+	                               sufficiency_contributions[Level.IN_RANGE][block] >= 1 or \
+	                               sufficiency_contributions[Level.HIGH][block] >= 1
 
-	block_has_no_contributions = fraction_contributions[LowNormalHigh.LOW][block] == 0 and \
-	                             fraction_contributions[LowNormalHigh.NORMAL][block] == 0 and \
-	                             fraction_contributions[LowNormalHigh.HIGH][block] == 0
+	block_has_no_contributions = fraction_contributions[Level.LOW][block] == 0 and \
+	                             fraction_contributions[Level.IN_RANGE][block] == 0 and \
+	                             fraction_contributions[Level.HIGH][block] == 0
 
 
 	# printing the block's range and ratio
@@ -65,8 +65,8 @@ def print_and_analyze_block_contributions(block, block_is_a_ratio_block, events,
 
 		# printing the block's contributions
 
-		for lnh in LowNormalHigh:
-			if lnh == LowNormalHigh.UNKNOWN:
+		for level in Level:
+			if level == Level.UNKNOWN:
 				continue
 
 			if block_is_a_ratio_block:
@@ -74,12 +74,12 @@ def print_and_analyze_block_contributions(block, block_is_a_ratio_block, events,
 			else:
 				contributions_string = "            "
 
-			contributions_string = contributions_string + str(lnh) + ": " + str(fraction_contributions[lnh][block])
+			contributions_string = contributions_string + str(level) + ": " + str(fraction_contributions[level][block])
 
 			# analyzing the block's contributions' sufficiency
-			if sufficiency_contributions[lnh][block] >= 1:
+			if sufficiency_contributions[level][block] >= 1:
 				contributions_string = contributions_string + "   Sufficient Events"
-			elif sufficiency_contributions[lnh][block] == 1/2:
+			elif sufficiency_contributions[level][block] == 1/2:
 				contributions_string = contributions_string + "   half sufficient event"
 
 			print(contributions_string)		
@@ -89,16 +89,16 @@ def print_and_analyze_block_contributions(block, block_is_a_ratio_block, events,
 
 		fraction_string_exists = False
 
-		if fraction_contributions[LowNormalHigh.NORMAL][block] <= fraction_contributions[LowNormalHigh.LOW][block] and \
-		   fraction_contributions[LowNormalHigh.HIGH][block] < fraction_contributions[LowNormalHigh.LOW][block]:
+		if fraction_contributions[Level.IN_RANGE][block] <= fraction_contributions[Level.LOW][block] and \
+		   fraction_contributions[Level.HIGH][block] < fraction_contributions[Level.LOW][block]:
 
-			if sufficiency_contributions[LowNormalHigh.LOW][block] >= 1 and \
-			   (fraction_contributions[LowNormalHigh.HIGH][block] == 0 or \
-			    (fraction_contributions[LowNormalHigh.HIGH][block] > 0 and \
-			     fraction_contributions[LowNormalHigh.LOW][block]/fraction_contributions[LowNormalHigh.HIGH][block] >= 3)):
+			if sufficiency_contributions[Level.LOW][block] >= 1 and \
+			   (fraction_contributions[Level.HIGH][block] == 0 or \
+			    (fraction_contributions[Level.HIGH][block] > 0 and \
+			     fraction_contributions[Level.LOW][block]/fraction_contributions[Level.HIGH][block] >= 3)):
 					print("=> LOW")
 
-			if fraction_contributions[LowNormalHigh.HIGH][block] > 0:
+			if fraction_contributions[Level.HIGH][block] > 0:
 
 				if block_is_a_ratio_block:
 					fraction_string = "      "
@@ -106,26 +106,26 @@ def print_and_analyze_block_contributions(block, block_is_a_ratio_block, events,
 					fraction_string = "            "
 
 				fraction_string = fraction_string + "=> -" +\
-				                  str(fraction_contributions[LowNormalHigh.LOW][block]/fraction_contributions[LowNormalHigh.HIGH][block])
+				                  str(fraction_contributions[Level.LOW][block]/fraction_contributions[Level.HIGH][block])
 				
 				fraction_string_exists = True
 
-		if fraction_contributions[LowNormalHigh.LOW][block] < fraction_contributions[LowNormalHigh.NORMAL][block] and \
-		   fraction_contributions[LowNormalHigh.HIGH][block] < fraction_contributions[LowNormalHigh.NORMAL][block]:
+		if fraction_contributions[Level.LOW][block] < fraction_contributions[Level.IN_RANGE][block] and \
+		   fraction_contributions[Level.HIGH][block] < fraction_contributions[Level.IN_RANGE][block]:
 
-			if sufficiency_contributions[LowNormalHigh.NORMAL][block] >= 1:
-					print("=> NORMAL")
+			if sufficiency_contributions[Level.IN_RANGE][block] >= 1:
+					print("=> IN_RANGE")
 
-		if fraction_contributions[LowNormalHigh.LOW][block] < fraction_contributions[LowNormalHigh.HIGH][block] and \
-		   fraction_contributions[LowNormalHigh.NORMAL][block] <= fraction_contributions[LowNormalHigh.HIGH][block]:
+		if fraction_contributions[Level.LOW][block] < fraction_contributions[Level.HIGH][block] and \
+		   fraction_contributions[Level.IN_RANGE][block] <= fraction_contributions[Level.HIGH][block]:
 
-			if sufficiency_contributions[LowNormalHigh.HIGH][block] >= 1 and \
-			   (fraction_contributions[LowNormalHigh.LOW][block] == 0 or \
-			    (fraction_contributions[LowNormalHigh.LOW][block] > 0 and \
-			     fraction_contributions[LowNormalHigh.HIGH][block]/fraction_contributions[LowNormalHigh.LOW][block] >= 3)):
+			if sufficiency_contributions[Level.HIGH][block] >= 1 and \
+			   (fraction_contributions[Level.LOW][block] == 0 or \
+			    (fraction_contributions[Level.LOW][block] > 0 and \
+			     fraction_contributions[Level.HIGH][block]/fraction_contributions[Level.LOW][block] >= 3)):
 					print("=> HIGH")
 
-			if fraction_contributions[LowNormalHigh.LOW][block] > 0:
+			if fraction_contributions[Level.LOW][block] > 0:
 
 				if block_is_a_ratio_block:
 					fraction_string = "      "
@@ -133,14 +133,14 @@ def print_and_analyze_block_contributions(block, block_is_a_ratio_block, events,
 					fraction_string = "            "
 
 				fraction_string = fraction_string + "=> +" + \
-				                  str(fraction_contributions[LowNormalHigh.HIGH][block]/fraction_contributions[LowNormalHigh.LOW][block])
+				                  str(fraction_contributions[Level.HIGH][block]/fraction_contributions[Level.LOW][block])
 
 				fraction_string_exists = True
 
 		# analyzing the block's average carbohydrate-ratio-related change
 		if block.type == RatioType.CARB_RATIO and \
-		   (sufficiency_contributions[LowNormalHigh.LOW][block] >= 1.5 and \
-		    sufficiency_contributions[LowNormalHigh.HIGH][block] >= 1.5):
+		   (sufficiency_contributions[Level.LOW][block] >= 1.5 and \
+		    sufficiency_contributions[Level.HIGH][block] >= 1.5):
 			
 				sum_of_negative_changes = 0
 				number_of_calculatable_negative_changes = 0
@@ -173,10 +173,10 @@ def print_and_analyze_block_contributions(block, block_is_a_ratio_block, events,
 
 						else:
 
-							if event.end_lnh == LowNormalHigh.LOW:
+							if event.end_level == Level.LOW:
 								number_of_uncalculatable_negative_changes += 1
 
-							elif event.end_lnh == LowNormalHigh.HIGH:
+							elif event.end_level == Level.HIGH:
 								number_of_uncalculatable_positive_changes += 1
 
 				average_negative_changes = sum_of_negative_changes/number_of_calculatable_negative_changes
@@ -215,26 +215,26 @@ def print_and_analyze_block_contributions(block, block_is_a_ratio_block, events,
 
 		printed_half_hour = False
 
-		for lnh in LowNormalHigh:
+		for level in Level:
 
-			if lnh == LowNormalHigh.UNKNOWN:
+			if level == Level.UNKNOWN:
 				continue
 
-			if on_the_half_hour_sufficiency_contributions[lnh][block] >= 1:
+			if on_the_half_hour_sufficiency_contributions[level][block] >= 1:
 			
 				if printed_half_hour == False:
 					print("         " + Range.time_string(block.range.end) + ":")
 					printed_half_hour = True
 
-				print("            " + str(lnh) + " -------------------   Sufficient Events")
+				print("            " + str(level) + " -------------------   Sufficient Events")
 
-			elif on_the_half_hour_sufficiency_contributions[lnh][block] >= 1/2:
+			elif on_the_half_hour_sufficiency_contributions[level][block] >= 1/2:
 
 				if printed_half_hour == False:
 					print("         " + Range.time_string(block.range.end) + ":")
 					printed_half_hour = True
 
-				print("            " + str(lnh) + " -------------------   half sufficient event")
+				print("            " + str(level) + " -------------------   half sufficient event")
 
 
 def print_and_analyze_half_hour_block_contributions(block, half_hours, events):

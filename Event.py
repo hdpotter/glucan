@@ -23,9 +23,9 @@ class EventType(Enum):
 
 
 
-class LowNormalHigh(Enum):
+class Level(Enum):
 	LOW = 0
-	NORMAL = 1
+	IN_RANGE = 1
 	HIGH = 2
 	UNKNOWN = 3
 
@@ -33,23 +33,23 @@ class LowNormalHigh(Enum):
 	@staticmethod
 	def parse(string):
 		if string == "low":
-			return LowNormalHigh.LOW
+			return Level.LOW
 		elif string == "in range":
-			return LowNormalHigh.NORMAL
+			return Level.IN_RANGE
 		elif string == "high":
-			return LowNormalHigh.HIGH
+			return Level.HIGH
 		else:
-			return LowNormalHigh.UNKNOWN
+			return Level.UNKNOWN
 
 
 	def __str__(self):
-		if self == LowNormalHigh.LOW:
+		if self == Level.LOW:
 			return "low"
-		if self == LowNormalHigh.NORMAL:
+		if self == Level.IN_RANGE:
 			return "in range"
-		if self == LowNormalHigh.HIGH:
+		if self == Level.HIGH:
 			return "high"
-		if self == LowNormalHigh.UNKNOWN:
+		if self == Level.UNKNOWN:
 			return "unknown"
 
 
@@ -90,12 +90,12 @@ class Event:
 	uid: int
 	type: EventType
 	range: Range
-	start_lnh: LowNormalHigh
+	start_level: Level
 	start_bg: int
 	adjustment_time: float
 	end_time_source: Source
-	end_lnh: LowNormalHigh
-	end_lnh_source: Source
+	end_level: Level
+	end_level_source: Source
 	end_bg: int
 	printed_alert: bool
 
@@ -116,13 +116,13 @@ class Event:
 		# parsing entries
 		event_type = EventType.parse(tokens[0])
 		start_time = parse_time_with_default(tokens[1], -1)
-		start_lnh = LowNormalHigh.parse(tokens[2])
+		start_level = Level.parse(tokens[2])
 		start_bg = parse_int_with_default(tokens[3], -1)
 		adjustment_time = parse_time_with_default(tokens[4], -1)
 		end_time = parse_time_with_default(tokens[5], -1)
 		end_time_source = Source.parse(tokens[6])
-		end_lnh = LowNormalHigh.parse(tokens[7])
-		end_lnh_source = Source.parse(tokens[8])
+		end_level = Level.parse(tokens[7])
+		end_level_source = Source.parse(tokens[8])
 		end_bg = parse_int_with_default(tokens[9], -1)
 		
 
@@ -150,7 +150,7 @@ class Event:
 		elif event_type == EventType.UNKNOWN:
 			event_string = event_string + "event "
 
-		event_string = event_string + "starting with a(n) " + str(start_lnh) + " blood glucose "
+		event_string = event_string + "starting with a(n) " + str(start_level) + " blood glucose "
 
 		if start_bg != -1:
 			event_string = event_string + "of " + str(start_bg) + " mg/dL "
@@ -158,7 +158,7 @@ class Event:
 		if start_time != -1:
 			event_string = event_string + "at " + str(start_time) + " "	
 
-		event_string = event_string + "and ending with a(n) " + str(end_lnh) + " blood glucose "		
+		event_string = event_string + "and ending with a(n) " + str(end_level) + " blood glucose "		
 
 		if end_bg != -1:
 			event_string = event_string + "of " + str(end_bg) + " mg/dL "
@@ -178,10 +178,10 @@ class Event:
 		if start_time == -1: 
 			raise Exception("The " + event_string + "has an unknown start time.")
 
-		if start_lnh == LowNormalHigh.UNKNOWN and event_type == EventType.BOLUS:
-			raise Exception("The " + event_string + "has an unknown start LowNormalHigh.")
+		if start_level == Level.UNKNOWN and event_type == EventType.BOLUS:
+			raise Exception("The " + event_string + "has an unknown start Level.")
 
-		if start_bg == -1 and event_type == EventType.BOLUS and start_lnh == LowNormalHigh.NORMAL and end_lnh_source == Source.TEST:
+		if start_bg == -1 and event_type == EventType.BOLUS and start_level == Level.IN_RANGE and end_level_source == Source.TEST:
 
 			print("The " + event_string + "has an unknown start glucose.")
 			print("")
@@ -206,20 +206,20 @@ class Event:
 
 			end_time_source = Source.TEST
 
-		if end_lnh == LowNormalHigh.UNKNOWN:
-			raise Exception("The " + event_string + "has an unknown end LowNormalHigh.")
+		if end_level == Level.UNKNOWN:
+			raise Exception("The " + event_string + "has an unknown end Level.")
 
-		if end_lnh_source == Source.UNKNOWN:
+		if end_level_source == Source.UNKNOWN:
 
-			print("The " + event_string + "has an unknown end LowNormalHigh source.")
+			print("The " + event_string + "has an unknown end Level source.")
 			print("")
 
 			printed_alert = True
 
-			end_lnh_source = Source.SENSOR
+			end_level_source = Source.SENSOR
 
 		if end_bg == -1 and \
-		   event_type == EventType.BOLUS and start_lnh == LowNormalHigh.NORMAL and end_time - adjustment_time >= 2 and end_lnh_source == Source.TEST:
+		   event_type == EventType.BOLUS and start_level == Level.IN_RANGE and end_time - adjustment_time >= 2 and end_level_source == Source.TEST:
 
 			print("The " + event_string + "has an unknown end glucose.")
 			print("")
@@ -230,12 +230,12 @@ class Event:
 		return Event( \
 			uid = uid, \
 			type = event_type, \
-			start_lnh = start_lnh, \
+			start_level = start_level, \
 			start_bg = start_bg, \
 			adjustment_time = adjustment_time, \
 			end_time_source = end_time_source, \
-			end_lnh = end_lnh, \
-			end_lnh_source = end_lnh_source, \
+			end_level = end_level, \
+			end_level_source = end_level_source, \
 			end_bg = end_bg, \
 			range = range, \
 			printed_alert = printed_alert )

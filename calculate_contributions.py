@@ -1,4 +1,4 @@
-from Event import EventType, LowNormalHigh, Source
+from Event import EventType, Level, Source
 from RatioBlock import RatioType
 
 
@@ -17,7 +17,7 @@ def calculate_contributions(event, block, inclusive):
 		if block.type == RatioType.BASAL:
 
 			if block.range.contains_time(event.range.end, inclusive) and \
-			   event.end_time_source == Source.SENSOR and event.end_lnh_source == Source.TEST:
+			   event.end_time_source == Source.SENSOR and event.end_level_source == Source.TEST:
 					sufficiency_for_changing_basals = 1/2
 
 		else:
@@ -31,13 +31,13 @@ def calculate_contributions(event, block, inclusive):
 
 		elif block.type == RatioType.CARB_RATIO:
 			if block.range.contains_time(event.adjustment_time, inclusive):
-				if event.start_lnh == LowNormalHigh.NORMAL:
+				if event.start_level == Level.IN_RANGE:
 					fraction = 1./2.
 
-					if event.end_lnh_source == Source.TEST:
+					if event.end_level_source == Source.TEST:
 						sufficiency_for_changing_carb_ratios = 1/2
 
-				elif (event.start_lnh == LowNormalHigh.LOW or event.start_lnh == LowNormalHigh.HIGH):
+				elif (event.start_level == Level.LOW or event.start_level == Level.HIGH):
 					fraction = 1./4.
 				else:
 					fraction = 0
@@ -46,7 +46,7 @@ def calculate_contributions(event, block, inclusive):
 
 		elif block.type == RatioType.SENSITIVITY:
 			if block.range.contains_time(event.adjustment_time, inclusive) and \
-			   (event.start_lnh == LowNormalHigh.LOW or event.start_lnh == LowNormalHigh.HIGH):
+			   (event.start_level == Level.LOW or event.start_level == Level.HIGH):
 					fraction = 1./4.
 			else:
 				fraction = 0
@@ -64,7 +64,7 @@ def calculate_contributions(event, block, inclusive):
 			if block.range.contains_time(event.adjustment_time, inclusive):
 				fraction = 1./2.
 
-				if event.end_lnh_source == Source.TEST:
+				if event.end_level_source == Source.TEST:
 					sufficiency_for_changing_sensitivities = 1/2
 
 			else:
@@ -78,7 +78,7 @@ def calculate_contributions(event, block, inclusive):
 		fraction = 0
 
 
-	if event.end_lnh_source != Source.TEST:
+	if event.end_level_source != Source.TEST:
 		fraction *= 1./3.
 
 	return (fraction, sufficiency_for_changing_basals, sufficiency_for_changing_carb_ratios, sufficiency_for_changing_sensitivities)
