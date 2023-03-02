@@ -2,7 +2,7 @@ from pickle import FALSE
 
 from calculate_contributions import calculate_contributions
 from Event import EventType, Level
-from parse_input import parse_events, parse_ratios
+from parse_input import parse_events, parse_ratio_blocks
 from Range import Range
 from RatioBlock import RatioBlock, RatioType
 
@@ -10,7 +10,7 @@ from RatioBlock import RatioBlock, RatioType
 
 # initializing blocks
 
-basals = parse_ratios("data/basals.csv", RatioType.BASAL)
+basals = parse_ratio_blocks("data/basals.csv", RatioType.BASAL)
 
 half_hour_basals = []
 uid = len(basals) + 1
@@ -23,7 +23,7 @@ for hh in range(0, 48):
 	uid += 1
 
 
-carb_ratios = parse_ratios("data/carb_ratios.csv", RatioType.CARB_RATIO)
+carb_ratios = parse_ratio_blocks("data/carb_ratios.csv", RatioType.CARB_RATIO)
 
 half_hour_carb_ratios = []
 uid = len(carb_ratios) + 1
@@ -36,7 +36,7 @@ for hh in range(0, 48):
 	uid += 1
 
 
-sensitivities = parse_ratios("data/sensitivities.csv", RatioType.SENSITIVITY)
+sensitivities = parse_ratio_blocks("data/sensitivities.csv", RatioType.SENSITIVITY)
 
 half_hour_sensitivities = []
 uid = len(sensitivities) + 1

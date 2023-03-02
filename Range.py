@@ -77,13 +77,24 @@ class Range:
 		return "[" + Range.time_string(self.start).rjust(5) + ", " + Range.time_string(self.end).rjust(5) + "]"
 
 	@staticmethod
-	def parse_time(timeString):
-		tokens = timeString.split(":")
+	def parse_time(time_string, default):
 
-		if len(tokens) != 2:
-			raise Exception("time format is hh:mm, 24h time")
+		if time_string == "":
 
-		hours = int(tokens[0])
-		minutes = int(tokens[1])
+			return default
 
-		return float(hours) + float(minutes)/60.
+		else:
+
+
+			time = time_string.split(":")
+
+
+			if len(time) != 2:
+				raise Exception("A time should be entered as a military time hh:mm.")
+
+			hours = int( time[0] )
+
+			minutes = int( time[1] )
+
+
+			return float(hours) + float(minutes)/60.

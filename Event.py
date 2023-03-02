@@ -77,12 +77,6 @@ def parse_int_with_default(string, default):
 	except:
 		return default
 
-def parse_time_with_default(string, default):
-	try:
-		return Range.parse_time(string)
-	except:
-		return default
-
 
 
 @dataclass
@@ -115,11 +109,11 @@ class Event:
 
 		# parsing entries
 		event_type = EventType.parse(tokens[0])
-		start_time = parse_time_with_default(tokens[1], -1)
+		start_time = Range.parse_time(tokens[1], -1)
 		start_level = Level.parse(tokens[2])
 		start_bg = parse_int_with_default(tokens[3], -1)
-		adjustment_time = parse_time_with_default(tokens[4], -1)
-		end_time = parse_time_with_default(tokens[5], -1)
+		adjustment_time = Range.parse_time(tokens[4], -1)
+		end_time = Range.parse_time(tokens[5], -1)
 		end_time_source = Source.parse(tokens[6])
 		end_level = Level.parse(tokens[7])
 		end_level_source = Source.parse(tokens[8])
