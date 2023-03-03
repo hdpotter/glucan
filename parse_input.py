@@ -1,4 +1,4 @@
-from Event import Event
+from Event import Event, EventType, Level, Source
 from Range import Range
 from RatioBlock import RatioBlock
 
@@ -16,7 +16,7 @@ def parse_ratio_blocks(file, ratio_type):
 	first_line_tokens = lines[0].split(",")
 
 	if len(first_line_tokens) != 2:
-			raise Exception("Each line of glucan/" + file + " should have exactly two entries, a start_time and a ratio entry." )
+		raise Exception("Each line of glucan/" + file + " should have exactly two entries, a start_time and a ratio entry." )
 
 	if first_line_tokens[0] != "start_time" or first_line_tokens[1] != "ratio" :
 		raise Exception("The first line of glucan/" + file + " should be | start_time | ratio |.")
@@ -48,7 +48,7 @@ def parse_ratio_blocks(file, ratio_type):
 	ratio_blocks = []
 	uid = 0
 
-	for i in range(len(start_times_and_ratios)):   # Why?
+	for i in range( len(start_times_and_ratios) ):
 
 		start_time = start_times_and_ratios[i][0]
 
@@ -62,7 +62,7 @@ def parse_ratio_blocks(file, ratio_type):
 
 		ratio_blocks.append(RatioBlock(
 			uid = uid,
-			range = Range(start = start_time, end = end_time),   # Why?
+			range = Range(start = start_time, end = end_time),   # EDIT LATER!
 			ratio = ratio,
 			type = ratio_type))
 		
@@ -73,28 +73,55 @@ def parse_ratio_blocks(file, ratio_type):
 
 
 
-def parse_events(filepath):
-	lines = []
-	for line in open(filepath):
-		lines.append(line[:-1])
+def parse_int(string, default):
+	try:
+		return int(string)
+	except:
+		return default
 
-	firstTokens = lines[0].split(",")
-	if ( len(firstTokens) != 10 or
-	     firstTokens[0] != "independent_bolus_or_correction" or
-	     firstTokens[1] != "start_time" or
-	     firstTokens[2] != "start_ low_in_range_or_high" or
-	     firstTokens[3] != "start_ blood_glucose" or
-	     firstTokens[4] != "adjustment_time" or
-	     firstTokens[5] != "end_time" or
-	     firstTokens[6] != "end_time_ sensor_or_test" or		
-	     firstTokens[7] != "end_ low_in_range_or_high" or
-	     firstTokens[8] != "end_level_ test_or_sensor" or
-	     firstTokens[9] != "end_ blood_glucose"
+
+
+def parse_events(file):
+
+
+	lines = []
+
+	for line in open(file):
+		lines.append( line[ :-1] )
+
+
+	first_line_tokens = lines[0].split(",")
+
+	if len(first_line_tokens) != 10:
+		raise Exception \
+("Each line of glucan/" + file + " should have the ten columns, \
+independent_bolus_or_correction, \
+start_time, \
+start_ low_in_range_or_high, \
+start_ blood_glucose, \
+adjustment_time, \
+end_time, end_time_ sensor_or_test, \
+end_ low_in_range_or_high, end_level_ test_or_sensor, and \
+end_ blood_glucose, \
+and no more.")
+
+	if ( first_line_tokens[0] != "independent_bolus_or_correction" or
+	     first_line_tokens[1] != "start_time" or
+	     first_line_tokens[2] != "start_ low_in_range_or_high" or
+	     first_line_tokens[3] != "start_ blood_glucose" or
+	     first_line_tokens[4] != "adjustment_time" or
+	     first_line_tokens[5] != "end_time" or
+	     first_line_tokens[6] != "end_time_ sensor_or_test" or		
+	     first_line_tokens[7] != "end_ low_in_range_or_high" or
+	     first_line_tokens[8] != "end_level_ test_or_sensor" or
+	     first_line_tokens[9] != "end_ blood_glucose"
 		):
 		raise Exception \
 ("The first line of glucan/data/events.csv should be \
 | independent_bolus_or_correction \
-| start_time | start_ low_in_range_or_high | start_ blood_glucose \
+| start_time \
+| start_ low_in_range_or_high \
+| start_ blood_glucose \
 | adjustment_time \
 | end_time | end_time_ sensor_or_test \
 | end_ low_in_range_or_high | end_level_ test_or_sensor \
@@ -105,18 +132,161 @@ def parse_events(filepath):
 	uid = 0
 	printed_alert = False
 
-	for line in lines[1:]:
-		if(line.isspace()):
+
+	for line in lines[1: ]:
+
+
+		if line.isspace():
 			continue
 
-		event = Event.parse(line, uid)
 
-		events.append(event)
+		tokens = line.split(",")
 
-		if event.printed_alert == True:
+		# ensuring empty columns after the final entry in a line are parsed
+		while len(tokens) < 10:
+			tokens.append("")
+
+
+		# parsing entries
+
+		event_type = EventType.parse(tokens[0])
+
+		start_time = Range.parse_time(tokens[1], -1)
+
+		start_level = Level.parse(tokens[2])
+
+		start_bg = parse_int(tokens[3], -1)
+
+		adjustment_time = Range.parse_time(tokens[4], -1)
+
+		end_time = Range.parse_time(tokens[5], -1)
+		end_time_source = Source.parse(tokens[6])
+
+		end_level = Level.parse(tokens[7])
+		end_level_source = Source.parse(tokens[8])
+
+		end_bg = parse_int(tokens[9], -1)
+		
+
+		# making range compliant
+
+		if end_time != -1 and end_time < start_time:
+			end_time += 24.
+
+		range = Range(start = start_time, end = end_time)
+
+
+		# ensuring events with an end_bg have TEST as their end_level_source
+		if end_bg != -1:
+			end_level_source = Source.TEST
+
+
+		# making event_string
+
+		event_string = ""
+
+		if adjustment_time != -1:
+			event_string = event_string + Range.time_str(adjustment_time) + " "
+
+		if event_type == EventType.INDEPENDENT:
+			event_string = event_string + "independent event "
+		elif event_type == EventType.BOLUS:
+			event_string = event_string + "bolus "
+		elif event_type == EventType.CORRECTION:
+			event_string = event_string + "correction "
+		elif event_type == EventType.UNKNOWN:
+			event_string = event_string + "event "
+
+		event_string = event_string + "starting with a(n) " + str(start_level) + " blood glucose "
+
+		if start_bg != -1:
+			event_string = event_string + "of " + str(start_bg) + " mg/dL "
+
+		if start_time != -1:
+			event_string = event_string + "at " + Range.time_str(start_time) + " "
+
+		event_string = event_string + "and ending with a(n) " + str(end_level) + " blood glucose "		
+
+		if end_bg != -1:
+			event_string = event_string + "of " + str(end_bg) + " mg/dL "
+
+		if end_time != -1:
+			event_string = event_string + "at " + Range.time_str(end_time) + " "	
+
+
+		# printing alerts or raising exceptions in order to get more useful event entries
+
+		if event_type == EventType.UNKNOWN:
+			raise Exception("The " + event_string + "has an unknown event type.")
+
+		if start_time == -1: 
+			raise Exception("The " + event_string + "has an unknown start time.")
+
+		if start_level == Level.UNKNOWN and event_type == EventType.BOLUS:
+			raise Exception("The " + event_string + "has an unknown start Level.")
+
+		if start_bg == -1 and \
+		   event_type == EventType.BOLUS and start_level == Level.IN_RANGE and end_time - adjustment_time >= 2 and end_level_source == Source.TEST:
+
+			print("The " + event_string + "has an unknown start glucose.")
+			print("")
+
 			printed_alert = True
-	
+
+		if adjustment_time == -1 and (event_type == EventType.BOLUS or event_type == EventType.CORRECTION):
+			raise Exception("The " + event_string + "has an unknown adjustment time.")
+
+		if end_time == -1:
+			raise Exception("The " + event_string + "has an unknown end time.")
+
+		if adjustment_time != -1 and not range.contains_time(adjustment_time, True):
+			raise Exception("The adjustment time of the " + event_string + "isn't a part of its range.")
+
+		if end_time_source == Source.UNKNOWN:
+
+			print("The " + event_string + "has an unknown end time source.")
+			print("")
+
+			printed_alert = True
+
+			end_time_source = Source.TEST
+
+		if end_level == Level.UNKNOWN:
+			raise Exception("The " + event_string + "has an unknown end Level.")
+
+		if end_level_source == Source.UNKNOWN:
+
+			print("The " + event_string + "has an unknown end Level source.")
+			print("")
+
+			printed_alert = True
+
+			end_level_source = Source.SENSOR
+
+		if end_bg == -1 and \
+		   event_type == EventType.BOLUS and start_level == Level.IN_RANGE and end_time - adjustment_time >= 2 and end_level_source == Source.TEST:
+
+			print("The " + event_string + "has an unknown end glucose.")
+			print("")
+
+			printed_alert = True
+
+
+		events.append( Event( \
+			uid = uid, \
+			type = event_type, \
+			start_level = start_level, \
+			start_bg = start_bg, \
+			adjustment_time = adjustment_time, \
+			end_time_source = end_time_source, \
+			end_level = end_level, \
+			end_level_source = end_level_source, \
+			end_bg = end_bg, \
+			range = range ) )
+
+
 		uid += 1
+
 
 	if printed_alert == True:
 		print("")
@@ -124,8 +294,3 @@ def parse_events(filepath):
 
 
 	return events
-
-
-# events = parse_events("example_input/events.csv")
-# for event  in events:
-# 	print(event)

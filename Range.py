@@ -58,23 +58,24 @@ class Range:
 			return time > range.start and time < range.end
 
 	@staticmethod
-	def time_string(time):
-		hours = modf(time)[1]
-		hourFrac = modf(time)[0]
+	def time_str(time):
 
-		minutes = modf(hourFrac*60)[1]
-		minuteFrac = modf(hourFrac*60)[0]
+		whole_hours = int( modf(time) [1] )
 
-		seconds = modf(minuteFrac*60)[1]
+		minutes = modf(time) [0] * 60
+		whole_minutes = round( minutes )
 
-		# we might get a tiny fraction of a second from floating point error, so ignore it
-		if seconds <= 0.01 or seconds >= 59.99:
-			return str(int(hours)) + ":" + str(int(minutes)).zfill(2)
-		else:
-			return str(int(hours)) + ":" + str(int(minutes)).zfill(2) + ":" + str(seconds)
+		# seconds = modf(minutes)[1] * 60
+		# whole_seconds = round(seconds)
+
+		return str(whole_hours) \
+		       + ":" + str(whole_minutes).zfill(2) \
+		#      + ":" + str(whole_seconds)
+
 
 	def __str__(self):
-		return "[" + Range.time_string(self.start).rjust(5) + ", " + Range.time_string(self.end).rjust(5) + "]"
+		return "[" + Range.time_str(self.start).rjust(5) + ", " + Range.time_str(self.end).rjust(5) + "]"
+
 
 	@staticmethod
 	def parse_time(time_string, default):

@@ -1,5 +1,3 @@
-from pickle import FALSE
-
 from calculate_contributions import calculate_contributions
 from Event import EventType, Level
 from parse_input import parse_events, parse_ratio_blocks
