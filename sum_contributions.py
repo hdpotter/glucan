@@ -6,65 +6,94 @@ from RatioBlock import RatioBlock, RatioType
 
 
 
-# initializing blocks
+# parsing input
+
+events = parse_events("data/events.csv")
 
 basals = parse_ratio_blocks("data/basals.csv", RatioType.BASAL)
 
-half_hour_basals = []
-uid = len(basals) + 1
-for hh in range(0, 48):
-	half_hour_basals.append(RatioBlock(
-		uid = uid, 
-		range = Range(start = float(hh)/2., end = float(hh)/2. + 0.5),
-		ratio = -1, # EDIT LATER!
-		type = RatioType.BASAL))
-	uid += 1
-
-
 carb_ratios = parse_ratio_blocks("data/carb_ratios.csv", RatioType.CARB_RATIO)
-
-half_hour_carb_ratios = []
-uid = len(carb_ratios) + 1
-for hh in range(0, 48):
-	half_hour_carb_ratios.append(RatioBlock(
-		uid = uid, 
-		range = Range(start = float(hh)/2., end = float(hh)/2. + 0.5),
-		ratio = -1, # EDIT LATER!
-		type = RatioType.CARB_RATIO))
-	uid += 1
-
 
 sensitivities = parse_ratio_blocks("data/sensitivities.csv", RatioType.SENSITIVITY)
 
-half_hour_sensitivities = []
-uid = len(sensitivities) + 1
+
+
+# making half hour blocks
+
+half_hour_basals = []
+uid = len(basals) + 1
+
 for hh in range(0, 48):
-	half_hour_sensitivities.append(RatioBlock(
+
+
+	half_hour_range = Range( \
+		start = float(hh)/2., \
+		end = float(hh)/2. + 0.5 )
+
+	for block in basals:
+		if Range.overlap(block.range, half_hour_range) > 0:
+			ratio = block.ratio
+
+
+	half_hour_basals.append( RatioBlock( 
 		uid = uid, 
-		range = Range(start = float(hh)/2., end = float(hh)/2. + 0.5),
-		ratio = -1, # EDIT LATER!
-		type = RatioType.SENSITIVITY))
+		range = half_hour_range, 
+		ratio = ratio, 
+		type = RatioType.BASAL ) )
+
+
 	uid += 1
 
 
-# making lists of start times
+half_hour_carb_ratios = []
+uid = len(carb_ratios) + 1
 
-basal_starts = []
-for block in basals:
-	basal_starts.append(block.range.start)
-
-carb_ratio_starts = []
-for block in carb_ratios:
-	carb_ratio_starts.append(block.range.start)
-
-sensitivity_starts = []
-for block in sensitivities:
-	sensitivity_starts.append(block.range.start)
+for hh in range(0, 48):
 
 
-# initializing events
+	half_hour_range = Range( \
+		start = float(hh)/2., \
+		end = float(hh)/2. + 0.5 )
 
-events = parse_events("data/events.csv")
+	for block in basals:
+		if Range.overlap(block.range, half_hour_range) > 0:
+			ratio = block.ratio
+
+
+	half_hour_basals.append( RatioBlock( 
+		uid = uid, 
+		range = half_hour_range, 
+		ratio = ratio, 
+		type = RatioType.CARB_RATIO ) )
+
+
+	uid += 1
+
+
+half_hour_sensitivities = []
+uid = len(sensitivities) + 1
+
+for hh in range(0, 48):
+
+
+	half_hour_range = Range( \
+		start = float(hh)/2., \
+		end = float(hh)/2. + 0.5 )
+
+	for block in basals:
+		if Range.overlap(block.range, half_hour_range) > 0:
+			ratio = block.ratio
+
+
+	half_hour_basals.append( RatioBlock( 
+		uid = uid, 
+		range = half_hour_range, 
+		ratio = ratio, 
+		type = RatioType.SENSITIVITY ) )
+
+
+	uid += 1
+
 
 
 # initializing intersections
@@ -107,6 +136,7 @@ for event in events:
 	half_hour_sensitivities_touching[event] = []
 
 
+
 	# determining intersections
 
 	for block in basals:
@@ -143,6 +173,7 @@ for event in events:
 	for block in half_hour_sensitivities:
 		if block.range.touch(event.range) == True:
 			half_hour_sensitivities_touching[event].append(block)
+
 
 
 # initializing contributions
@@ -197,6 +228,28 @@ for level in Level:
 
 		sufficiency_contributions[level][block] = 0
 		on_the_half_hour_sufficiency_contributions[level][block] = 0
+
+
+
+# making lists of start times
+
+basal_starts = []
+
+for block in basals:
+	basal_starts.append(block.range.start)
+
+
+carb_ratio_starts = []
+
+for block in carb_ratios:
+	carb_ratio_starts.append(block.range.start)
+
+
+sensitivity_starts = []
+
+for block in sensitivities:
+	sensitivity_starts.append(block.range.start)
+
 
 
 # summing contributions

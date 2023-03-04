@@ -4,75 +4,6 @@ from RatioBlock import RatioBlock
 
 
 
-def parse_ratio_blocks(file, ratio_type):
-
-
-	lines = []
-
-	for line in open(file):
-		lines.append( line[ :-1] )
-
-
-	first_line_tokens = lines[0].split(",")
-
-	if len(first_line_tokens) != 2:
-		raise Exception("Each line of glucan/" + file + " should have exactly two entries, a start_time and a ratio entry." )
-
-	if first_line_tokens[0] != "start_time" or first_line_tokens[1] != "ratio" :
-		raise Exception("The first line of glucan/" + file + " should be | start_time | ratio |.")
-
-
-	if(Range.parse_time(lines[1].split(",")[0], -1) != 0):
-		raise Exception("The first start_time in glucan/" + file + " should be 00:00.")
-
-
-	start_times_and_ratios = []
-
-	for line in lines[1: ]:
-
-
-		tokens = line.split(",")
-
-
-		start_time = Range.parse_time(tokens[0], -1)
-
-		if start_time == -1:
-			raise Exception("Line " + line + " of glucan/" + file + " should have a start_time entry.")
-
-		ratio = float( tokens[1] )
-
-
-		start_times_and_ratios.append( [start_time, ratio] )
-
-
-	ratio_blocks = []
-	uid = 0
-
-	for i in range( len(start_times_and_ratios) ):
-
-		start_time = start_times_and_ratios[i][0]
-
-		if i < len(start_times_and_ratios) - 1:
-			end_time = start_times_and_ratios[i+1][0]
-		else:
-			end_time = 24.
-		
-		ratio = start_times_and_ratios[i][1]
-
-
-		ratio_blocks.append(RatioBlock(
-			uid = uid,
-			range = Range(start = start_time, end = end_time),   # EDIT LATER!
-			ratio = ratio,
-			type = ratio_type))
-		
-		
-		uid += 1
-
-	return ratio_blocks
-
-
-
 def parse_int(string, default):
 	try:
 		return int(string)
@@ -294,3 +225,72 @@ and no more.")
 
 
 	return events
+
+
+
+def parse_ratio_blocks(file, ratio_type):
+
+
+	lines = []
+
+	for line in open(file):
+		lines.append( line[ :-1] )
+
+
+	first_line_tokens = lines[0].split(",")
+
+	if len(first_line_tokens) != 2:
+		raise Exception("Each line of glucan/" + file + " should have exactly two entries, a start_time and a ratio entry." )
+
+	if first_line_tokens[0] != "start_time" or first_line_tokens[1] != "ratio" :
+		raise Exception("The first line of glucan/" + file + " should be | start_time | ratio |.")
+
+
+	if(Range.parse_time(lines[1].split(",")[0], -1) != 0):
+		raise Exception("The first start_time in glucan/" + file + " should be 00:00.")
+
+
+	start_times_and_ratios = []
+
+	for line in lines[1: ]:
+
+
+		tokens = line.split(",")
+
+
+		start_time = Range.parse_time(tokens[0], -1)
+
+		if start_time == -1:
+			raise Exception("Line " + line + " of glucan/" + file + " should have a start_time entry.")
+
+		ratio = float( tokens[1] )
+
+
+		start_times_and_ratios.append( [start_time, ratio] )
+
+
+	ratio_blocks = []
+	uid = 0
+
+	for i in range(0, len(start_times_and_ratios)):
+
+		start_time = start_times_and_ratios[i][0]
+
+		if i < len(start_times_and_ratios) - 1:
+			end_time = start_times_and_ratios[i+1][0]
+		else:
+			end_time = 24.
+		
+		ratio = start_times_and_ratios[i][1]
+
+
+		ratio_blocks.append(RatioBlock(
+			uid = uid,
+			range = Range(start = start_time, end = end_time),   # EDIT LATER!
+			ratio = ratio,
+			type = ratio_type))
+		
+		
+		uid += 1
+
+	return ratio_blocks
