@@ -60,7 +60,7 @@ for hh in range(0, 48):
 			ratio = block.ratio
 
 
-	half_hour_basals.append( RatioBlock( 
+	half_hour_carb_ratios.append( RatioBlock( 
 		uid = uid, 
 		range = half_hour_range, 
 		ratio = ratio, 
@@ -85,7 +85,7 @@ for hh in range(0, 48):
 			ratio = block.ratio
 
 
-	half_hour_basals.append( RatioBlock( 
+	half_hour_sensitivities.append( RatioBlock( 
 		uid = uid, 
 		range = half_hour_range, 
 		ratio = ratio, 
