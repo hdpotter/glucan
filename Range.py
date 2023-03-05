@@ -65,12 +65,13 @@ class Range:
 		minutes = modf(time) [0] * 60
 		whole_minutes = round( minutes )
 
-		# seconds = modf(minutes)[1] * 60
-		# whole_seconds = round(seconds)
 
-		return str(whole_hours) \
-		       + ":" + str(whole_minutes).zfill(2) \
-		#      + ":" + str(whole_seconds)
+		if whole_minutes == 60:
+			whole_hours += 1
+			whole_minutes = 0
+
+
+		return str(whole_hours) + ":" + str(whole_minutes).zfill(2)
 
 
 	def __str__(self):
