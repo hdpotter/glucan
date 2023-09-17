@@ -99,9 +99,7 @@ def print_and_analyze_block_contributions(block, block_is_a_ratio_block, events,
 			     fraction_contributions[Level.LOW][block]/fraction_contributions[Level.HIGH][block] >= 3)):
 
 					if block.type == RatioType.CARB_RATIO:
-
-						change_string = "=> Low\n"
-
+						change_string = "=> Low"
 						change_string_exists = True
 
 					else:
@@ -134,9 +132,7 @@ def print_and_analyze_block_contributions(block, block_is_a_ratio_block, events,
 			     fraction_contributions[Level.HIGH][block]/fraction_contributions[Level.LOW][block] >= 3)):
 
 					if block.type == RatioType.CARB_RATIO:
-
-						change_string = "=> High\n"
-
+						change_string = "=> High"
 						change_string_exists = True
 
 					else:
@@ -155,41 +151,12 @@ def print_and_analyze_block_contributions(block, block_is_a_ratio_block, events,
 				fraction_string_exists = True
 
 
-		# analyzing the block's average carbohydrate-ratio-related change
 		if block.type == RatioType.CARB_RATIO:
+			analyze_average_change(events, block, block_is_a_ratio_block)
 
-			(average_change_is_calculatable, average_change) = analyze_average_change(events, block)
 
-			if average_change_is_calculatable:
-
-				if block_is_a_ratio_block:
-
-					if change_string_exists:
-						change_string = change_string + "      "
-					else:
-						change_string = "      "
-
-						change_string_exists = True
-
-				else:
-
-					if change_string_exists:
-						change_string = change_string + "            "
-					else:
-						change_string = "            "
-
-						change_string_exists = True
-
-				change_string = change_string + "=> "
-
-				if average_change > 0:
-					change_string = change_string + "+"
-
-				change_string = change_string + str(average_change) + " mg/dL"
-
-			if change_string_exists:
-				print(change_string)
-
+		if change_string_exists:
+			print(change_string)
 
 		if fraction_string_exists:
 			print(fraction_string)

@@ -1,20 +1,21 @@
 from calculate_contributions import calculate_contributions
 from Event import Level
-from sum_contributions import *
 
 
 
-def analyze_average_change(events, block):
+def analyze_average_change(events, block, block_is_a_ratio_block):
 
 
 	# calculating the block's average carbohydrate-ratio-related change
 
+	number_of_large_negative_changes = 0
 	sum_of_negative_changes = 0
 	number_of_calculatable_negative_changes = 0
 	number_of_uncalculatable_negative_changes = 0
 
 	number_of_zero_changes = 0
 
+	number_of_large_positive_changes = 0
 	sum_of_positive_changes = 0
 	number_of_calculatable_positive_changes = 0
 	number_of_uncalculatable_positive_changes = 0
@@ -28,14 +29,18 @@ def analyze_average_change(events, block):
 
 				change = event.end_bg-event.start_bg
 
+				if change < -25:
+					number_of_large_negative_changes += 1
 				if change < 0:
 					sum_of_negative_changes += change
 					number_of_calculatable_negative_changes += 1
 
-				elif change == 0:
+				if change == 0:
 					number_of_zero_changes += 1
 
-				elif change > 0:
+				if change > 25:
+					number_of_large_positive_changes += 1
+				if change > 0:
 					sum_of_positive_changes += change
 					number_of_calculatable_positive_changes += 1
 
@@ -75,24 +80,29 @@ def analyze_average_change(events, block):
 		average_change = sum_of_changes/number_of_changes
 
 
-		average_change_is_calculatable = True
-
-
 		# analyzing the block's average carbohydrate-ratio-related change
-		if sufficiency_contributions[Level.LOW][block] >= 1.5 and sufficiency_contributions[Level.HIGH][block] >= 1.5:
 
-				if number_of_uncalculatable_negative_changes < number_of_calculatable_negative_changes and average_change < -25:
-					print("=> LOW")
+		if (number_of_calculatable_negative_changes >= 3 or number_of_large_negative_changes >= 2) and \
+		   number_of_uncalculatable_negative_changes < number_of_calculatable_negative_changes and \
+		   average_change < -25:
+				print("=> LOW")
 
-				elif number_of_uncalculatable_positive_changes < number_of_calculatable_positive_changes and average_change > 25:
-					print("=> HIGH")
+		if (number_of_calculatable_positive_changes >= 3 or number_of_large_positive_changes >= 2) and \
+		   number_of_uncalculatable_positive_changes < number_of_calculatable_positive_changes and \
+		   average_change > 25:
+				print("=> HIGH")
 
 
-		return(average_change_is_calculatable, average_change)
+		if block_is_a_ratio_block:
+			average_change_string = "      "
+		else:
+			average_change_string = "            "
 
+		average_change_string = average_change_string + "=> "
 
-	else:
+		if average_change > 0:
+			average_change_string = average_change_string + "+"
 
-		average_change_is_calculatable = False
+		average_change_string = average_change_string + str(average_change) + " mg/dL"
 
-		return(average_change_is_calculatable, -1000)
+		print(average_change_string)
