@@ -87,8 +87,8 @@ def print_and_analyze_block_contributions(block, block_is_a_ratio_block, events,
 
 		# analyzing the block's contributions
 
-		change_string_exists = False
-		fraction_string_exists = False
+		conclusion_exists = False
+		fraction_exists = False
 
 		if fraction_contributions[Level.IN_RANGE][block] <= fraction_contributions[Level.LOW][block] and \
 		   fraction_contributions[Level.HIGH][block] < fraction_contributions[Level.LOW][block]:
@@ -99,11 +99,12 @@ def print_and_analyze_block_contributions(block, block_is_a_ratio_block, events,
 			     fraction_contributions[Level.LOW][block]/fraction_contributions[Level.HIGH][block] >= 3)):
 
 					if block.type == RatioType.CARB_RATIO:
-						change_string = "=> Low"
-						change_string_exists = True
+						conclusion_string = "=> Low"
+						conclusion_exists = True
 
 					else:
-						print("=> LOW")
+						conclusion_string = "=> LOW"
+						conclusion_exists = True
 
 			if fraction_contributions[Level.HIGH][block] > 0:
 
@@ -112,10 +113,15 @@ def print_and_analyze_block_contributions(block, block_is_a_ratio_block, events,
 				else:
 					fraction_string = "            "
 
-				fraction_string = fraction_string + "=> -" +\
+				if conclusion_exists:
+					conclusion_string = conclusion_string + " b/c"
+				else:
+					fraction_string = fraction_string + "=> "
+
+				fraction_string = fraction_string + "-" +\
 				                  str(fraction_contributions[Level.LOW][block]/fraction_contributions[Level.HIGH][block])
 				
-				fraction_string_exists = True
+				fraction_exists = True
 
 		if fraction_contributions[Level.LOW][block] < fraction_contributions[Level.IN_RANGE][block] and \
 		   fraction_contributions[Level.HIGH][block] < fraction_contributions[Level.IN_RANGE][block]:
@@ -132,11 +138,12 @@ def print_and_analyze_block_contributions(block, block_is_a_ratio_block, events,
 			     fraction_contributions[Level.HIGH][block]/fraction_contributions[Level.LOW][block] >= 3)):
 
 					if block.type == RatioType.CARB_RATIO:
-						change_string = "=> High"
-						change_string_exists = True
+						conclusion_string = "=> High"
+						conclusion_exists = True
 
 					else:
-						print("=> HIGH")
+						conclusion_string = "=> HIGH"
+						conclusion_exists = True
 
 			if fraction_contributions[Level.LOW][block] > 0:
 
@@ -145,20 +152,25 @@ def print_and_analyze_block_contributions(block, block_is_a_ratio_block, events,
 				else:
 					fraction_string = "            "
 
-				fraction_string = fraction_string + "=> +" + \
+				if conclusion_exists:
+					conclusion_string = conclusion_string + " b/c"
+				else:
+					fraction_string = fraction_string + "=> "
+
+				fraction_string = fraction_string + "+" + \
 				                  str(fraction_contributions[Level.HIGH][block]/fraction_contributions[Level.LOW][block])
 
-				fraction_string_exists = True
+				fraction_exists = True
 
 
 		if block.type == RatioType.CARB_RATIO:
 			analyze_average_change(events, block, block_is_a_ratio_block)
 
 
-		if change_string_exists:
-			print(change_string)
+		if conclusion_exists:
+			print(conclusion_string)
 
-		if fraction_string_exists:
+		if fraction_exists:
 			print(fraction_string)
 
 

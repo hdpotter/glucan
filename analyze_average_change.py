@@ -79,18 +79,22 @@ def analyze_average_change(events, block, block_is_a_ratio_block):
 
 		average_change = sum_of_changes/number_of_changes
 
+		conclusion_exists = False
+
 
 		# analyzing the block's average carbohydrate-ratio-related change
 
 		if (number_of_calculatable_negative_changes >= 3 or number_of_large_negative_changes >= 2) and \
 		   number_of_uncalculatable_negative_changes < number_of_calculatable_negative_changes and \
 		   average_change < -25:
-				print("=> LOW")
+				print("=> LOW b/c")
+				conclusion_exists = True
 
 		if (number_of_calculatable_positive_changes >= 3 or number_of_large_positive_changes >= 2) and \
 		   number_of_uncalculatable_positive_changes < number_of_calculatable_positive_changes and \
 		   average_change > 25:
-				print("=> HIGH")
+				print("=> HIGH b/c")
+				conclusion_exists = True
 
 
 		if block_is_a_ratio_block:
@@ -98,7 +102,8 @@ def analyze_average_change(events, block, block_is_a_ratio_block):
 		else:
 			average_change_string = "            "
 
-		average_change_string = average_change_string + "=> "
+		if conclusion_exists == False:
+			average_change_string = average_change_string + "=> "
 
 		if average_change > 0:
 			average_change_string = average_change_string + "+"
