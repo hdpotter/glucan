@@ -191,6 +191,13 @@ and no more.")
 		if end_time == -1:
 			raise Exception("The " + event_string + "has an unknown end time.")
 
+		if end_time - start_time >= 12:
+
+			print("The " + event_string + "has a range of at least 12 hours.")
+			print("")
+
+			printed_alert = True
+
 		if adjustment_time != -1 and not range.contains_time(adjustment_time, True):
 			raise Exception("The adjustment time of the " + event_string + "isn't a part of its range.")
 
