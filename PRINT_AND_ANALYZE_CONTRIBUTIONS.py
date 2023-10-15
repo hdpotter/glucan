@@ -27,7 +27,7 @@ def print_and_analyze_block_contributions(block, block_is_a_ratio_block, events,
 	                             fraction_contributions[Level.HIGH][block] == 0
 
 
-	# printing the block's range and ratio
+	# printing the block's range of time and ratio
 
 	if block_is_a_ratio_block:
 		block_string = "   "
@@ -193,7 +193,7 @@ def print_and_analyze_block_contributions(block, block_is_a_ratio_block, events,
 			if on_the_half_hour_sufficiency_contributions[level][block] >= 1:
 			
 				if printed_half_hour == False:
-					print("         " + Range.time_str(block.range.end) + ":")
+					print("         " + Range_of_Time.time_str(block.range.end) + ":")
 					printed_half_hour = True
 
 				print("            " + str(level) + " -------------------   Sufficient Events")
@@ -201,7 +201,7 @@ def print_and_analyze_block_contributions(block, block_is_a_ratio_block, events,
 			elif on_the_half_hour_sufficiency_contributions[level][block] >= 1/2:
 
 				if printed_half_hour == False:
-					print("         " + Range.time_str(block.range.end) + ":")
+					print("         " + Range_of_Time.time_str(block.range.end) + ":")
 					printed_half_hour = True
 
 				print("            " + str(level) + " -------------------   half sufficient event")

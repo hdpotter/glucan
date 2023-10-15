@@ -1,5 +1,5 @@
 from Event import Event, EventType, Level, Source
-from Range import Range
+from Range_of_Time import Range_of_Time
 from RatioBlock import RatioBlock
 
 
@@ -120,12 +120,12 @@ and no more.")
 		end_bg = parse_integer(tokens[9], -1)
 		
 
-		# making range compliant
+		# making range of time compliant
 
 		if end_time != -1 and end_time < start_time:
 			end_time += 24.
 
-		range = Range(start = start_time, end = end_time)
+		range = Range_of_Time(start = start_time, end = end_time)
 
 
 		# ensuring events with an end_bg have TEST as their end_level_source
@@ -138,7 +138,7 @@ and no more.")
 		event_string = ""
 
 		if adjustment_time != -1:
-			event_string = event_string + Range.time_str(adjustment_time) + " "
+			event_string = event_string + Range_of_Time.time_str(adjustment_time) + " "
 
 		if event_type == EventType.INDEPENDENT:
 			event_string = event_string + "independent event "
@@ -155,7 +155,7 @@ and no more.")
 			event_string = event_string + "of " + str(start_bg) + " mg/dL "
 
 		if start_time != -1:
-			event_string = event_string + "at " + Range.time_str(start_time) + " "
+			event_string = event_string + "at " + Range_of_Time.time_str(start_time) + " "
 
 		event_string = event_string + "and ending with a(n) " + str(end_level) + " blood glucose "		
 
@@ -163,7 +163,7 @@ and no more.")
 			event_string = event_string + "of " + str(end_bg) + " mg/dL "
 
 		if end_time != -1:
-			event_string = event_string + "at " + Range.time_str(end_time) + " "	
+			event_string = event_string + "at " + Range_of_Time.time_str(end_time) + " "	
 
 
 		# printing alerts or raising exceptions in order to get more useful event entries
@@ -193,13 +193,13 @@ and no more.")
 
 		if end_time - start_time >= 12:
 
-			print("The " + event_string + "has a range of at least 12 hours.")
+			print("The " + event_string + "has a range of time of at least 12 hours.")
 			print("")
 
 			printed_alert = True
 
 		if adjustment_time != -1 and not range.contains_time(adjustment_time, True):
-			raise Exception("The adjustment time of the " + event_string + "isn't a part of its range.")
+			raise Exception("The adjustment time of the " + event_string + "isn't a part of its range of time.")
 
 		if end_time_source == Source.UNKNOWN:
 
@@ -314,7 +314,7 @@ def parse_ratio_blocks(file, ratio_type):
 
 		ratio_blocks.append(RatioBlock(
 			uid = uid,
-			range = Range(start = start_time, end = end_time),   # EDIT LATER!
+			range = Range_of_Time(start = start_time, end = end_time),
 			ratio = ratio,
 			type = ratio_type))
 		

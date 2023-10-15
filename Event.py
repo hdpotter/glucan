@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum
 
-from Range import Range
+from Range_of_Time import Range_of_Time
 
 
 
@@ -92,7 +92,7 @@ class Source(Enum):
 class Event:
 	uid: int
 	type: EventType
-	range: Range
+	range: Range_of_Time
 	start_level: Level
 	start_bg: int
 	adjustment_time: float

@@ -1,7 +1,7 @@
 from calculate_contributions import calculate_contributions
 from Event import EventType, Level
 from parse_input import parse_events, parse_ratio_blocks
-from Range import Range
+from Range_of_Time import Range_of_Time
 from RatioBlock import RatioBlock, RatioType
 
 
@@ -26,12 +26,12 @@ uid = len(basals) + 1
 for hh in range(0, 48):
 
 
-	half_hour_range = Range( \
+	half_hour_range = Range_of_Time( \
 		start = float(hh)/2., \
 		end = float(hh)/2. + 0.5 )
 
 	for block in basals:
-		if Range.overlap(block.range, half_hour_range) > 0:
+		if Range_of_Time.overlap(block.range, half_hour_range) > 0:
 			ratio = block.ratio
 
 
@@ -51,12 +51,12 @@ uid = len(carb_ratios) + 1
 for hh in range(0, 48):
 
 
-	half_hour_range = Range( \
+	half_hour_range = Range_of_Time( \
 		start = float(hh)/2., \
 		end = float(hh)/2. + 0.5 )
 
 	for block in basals:
-		if Range.overlap(block.range, half_hour_range) > 0:
+		if Range_of_Time.overlap(block.range, half_hour_range) > 0:
 			ratio = block.ratio
 
 
@@ -76,12 +76,12 @@ uid = len(sensitivities) + 1
 for hh in range(0, 48):
 
 
-	half_hour_range = Range( \
+	half_hour_range = Range_of_Time( \
 		start = float(hh)/2., \
 		end = float(hh)/2. + 0.5 )
 
 	for block in basals:
-		if Range.overlap(block.range, half_hour_range) > 0:
+		if Range_of_Time.overlap(block.range, half_hour_range) > 0:
 			ratio = block.ratio
 
 

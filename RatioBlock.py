@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum
 
-from Range import Range
+from Range_of_Time import Range_of_Time
 
 
 class RatioType(Enum):
@@ -13,7 +13,7 @@ class RatioType(Enum):
 @dataclass
 class RatioBlock:
 	uid: int
-	range: Range
+	range: Range_of_Time
 	ratio: float
 	type: RatioType
 
