@@ -76,27 +76,3 @@ class Range:
 
 	def __str__(self):
 		return "[" + Range.time_str(self.start).rjust(5) + ", " + Range.time_str(self.end).rjust(5) + "]"
-
-
-	@staticmethod
-	def parse_time(time_string, default):
-
-		if time_string == "":
-
-			return default
-
-		else:
-
-
-			time = time_string.split(":")
-
-
-			if len(time) != 2:
-				raise Exception("A time should be entered as a military time hh:mm.")
-
-			hours = int( time[0] )
-
-			minutes = int( time[1] )
-
-
-			return float(hours) + float(minutes)/60.

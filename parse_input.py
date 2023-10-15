@@ -4,7 +4,28 @@ from RatioBlock import RatioBlock
 
 
 
-def parse_int(string, default):
+def parse_time(time_string, default):
+
+	if time_string == "":
+
+		return default
+
+
+	else:
+
+		time = time_string.split(":")
+
+		if len(time) != 2:
+			raise Exception("The time " + time_string + " was not entered as a military time hh:mm.")
+
+		hours = int( time[0] )
+		minutes = int( time[1] )
+
+		return float(hours) + float(minutes)/60.
+
+
+
+def parse_integer(string, default):
 	try:
 		return int(string)
 	except:
@@ -82,21 +103,21 @@ and no more.")
 
 		event_type = EventType.parse(tokens[0])
 
-		start_time = Range.parse_time(tokens[1], -1)
+		start_time = parse_time(tokens[1], -1)
 
 		start_level = Level.parse(tokens[2])
 
-		start_bg = parse_int(tokens[3], -1)
+		start_bg = parse_integer(tokens[3], -1)
 
-		adjustment_time = Range.parse_time(tokens[4], -1)
+		adjustment_time = parse_time(tokens[4], -1)
 
-		end_time = Range.parse_time(tokens[5], -1)
+		end_time = parse_time(tokens[5], -1)
 		end_time_source = Source.parse(tokens[6])
 
 		end_level = Level.parse(tokens[7])
 		end_level_source = Source.parse(tokens[8])
 
-		end_bg = parse_int(tokens[9], -1)
+		end_bg = parse_integer(tokens[9], -1)
 		
 
 		# making range compliant
@@ -246,7 +267,7 @@ def parse_ratio_blocks(file, ratio_type):
 		raise Exception("The first line of glucan/" + file + " should be | start_time | ratio |.")
 
 
-	if(Range.parse_time(lines[1].split(",")[0], -1) != 0):
+	if(parse_time(lines[1].split(",")[0], -1) != 0):
 		raise Exception("The first start_time in glucan/" + file + " should be 00:00.")
 
 
@@ -258,7 +279,7 @@ def parse_ratio_blocks(file, ratio_type):
 		tokens = line.split(",")
 
 
-		start_time = Range.parse_time(tokens[0], -1)
+		start_time = parse_time(tokens[0], -1)
 
 		if start_time == -1:
 			raise Exception("Line " + line + " of glucan/" + file + " should have a start_time entry.")
