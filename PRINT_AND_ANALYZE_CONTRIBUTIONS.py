@@ -98,12 +98,16 @@ def print_and_analyze_block_contributions(block, block_is_a_ratio_block, events,
 			    (fraction_contributions[Level.HIGH][block] > 0 and \
 			     fraction_contributions[Level.LOW][block]/fraction_contributions[Level.HIGH][block] >= 3)):
 
-					if block.type == RatioType.CARB_RATIO:
-						conclusion_string = "=> Low"
-						conclusion_exists = True
-
+					if block_is_a_ratio_block:
+						conclusion_string = ""
 					else:
-						conclusion_string = "=> LOW"
+						conclusion_string = "     "
+
+					if block.type == RatioType.CARB_RATIO:
+						conclusion_string = conclusion_string + "=> Low"
+						conclusion_exists = True
+					else:
+						conclusion_string = conclusion_string + "=> LOW"
 						conclusion_exists = True
 
 			if fraction_contributions[Level.HIGH][block] > 0:
@@ -127,7 +131,10 @@ def print_and_analyze_block_contributions(block, block_is_a_ratio_block, events,
 		   fraction_contributions[Level.HIGH][block] < fraction_contributions[Level.IN_RANGE][block]:
 
 			if sufficiency_contributions[Level.IN_RANGE][block] >= 1:
+				if block_is_a_ratio_block:
 					print("=> IN_RANGE")
+				else:
+					print("     => IN_RANGE")
 
 		if fraction_contributions[Level.LOW][block] < fraction_contributions[Level.HIGH][block] and \
 		   fraction_contributions[Level.IN_RANGE][block] <= fraction_contributions[Level.HIGH][block]:
@@ -137,12 +144,16 @@ def print_and_analyze_block_contributions(block, block_is_a_ratio_block, events,
 			    (fraction_contributions[Level.LOW][block] > 0 and \
 			     fraction_contributions[Level.HIGH][block]/fraction_contributions[Level.LOW][block] >= 3)):
 
-					if block.type == RatioType.CARB_RATIO:
-						conclusion_string = "=> High"
-						conclusion_exists = True
-
+					if block_is_a_ratio_block:
+						conclusion_string = ""
 					else:
-						conclusion_string = "=> HIGH"
+						conclusion_string = "     "
+
+					if block.type == RatioType.CARB_RATIO:
+						conclusion_string = conclusion_string + "=> High"
+						conclusion_exists = True
+					else:
+						conclusion_string = conclusion_string + "=> HIGH"
 						conclusion_exists = True
 
 			if fraction_contributions[Level.LOW][block] > 0:

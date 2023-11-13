@@ -87,13 +87,23 @@ def analyze_average_change(events, block, block_is_a_ratio_block):
 		if (number_of_calculatable_negative_changes >= 3 or number_of_large_negative_changes >= 2) and \
 		   number_of_uncalculatable_negative_changes < number_of_calculatable_negative_changes and \
 		   average_change < -25:
-				print("=> LOW b/c")
+
+				if block_is_a_ratio_block:
+					print("=> LOW b/c")
+				else:
+					print("     => LOW b/c")
+
 				conclusion_exists = True
 
 		if (number_of_calculatable_positive_changes >= 3 or number_of_large_positive_changes >= 2) and \
 		   number_of_uncalculatable_positive_changes < number_of_calculatable_positive_changes and \
 		   average_change > 25:
-				print("=> HIGH b/c")
+
+				if block_is_a_ratio_block:
+					print("=> HIGH b/c")
+				else:
+					print("     => HIGH b/c")
+
 				conclusion_exists = True
 
 
