@@ -3,7 +3,7 @@ from Event import Level
 
 
 
-def analyze_average_change(events, block, block_is_a_ratio_block):
+def evaluate_average_change(events, block, block_is_a_ratio_block):
 
 
 	# calculating the block's average carbohydrate-ratio-related change
@@ -82,7 +82,7 @@ def analyze_average_change(events, block, block_is_a_ratio_block):
 		conclusion_exists = False
 
 
-		# analyzing the block's average carbohydrate-ratio-related change
+		# evaluating the block's average carbohydrate-ratio-related change
 
 		if (number_of_calculatable_negative_changes >= 3 or number_of_large_negative_changes >= 2) and \
 		   number_of_uncalculatable_negative_changes < number_of_calculatable_negative_changes and \

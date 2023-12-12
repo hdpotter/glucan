@@ -1,4 +1,4 @@
-from analyze_average_change import analyze_average_change
+from evaluate_average_change import evaluate_average_change
 from Event import Level
 from RatioBlock import RatioType
 from sum_contributions import *
@@ -15,7 +15,7 @@ print("")
 
 
 
-def print_and_analyze_block_contributions(block, block_is_a_ratio_block, events, half_hours):
+def evaluate_block_contributions(block, block_is_a_ratio_block, events, half_hours):
 
 
 	block_has_sufficienct_events = sufficiency_contributions[Level.LOW][block] >= 1 or \
@@ -57,7 +57,7 @@ def print_and_analyze_block_contributions(block, block_is_a_ratio_block, events,
 		print(block_string)
 
 
-	# determining if there is sufficient data to analyze
+	# determining if there is sufficient data to evaluate
 
 	if (block_is_a_ratio_block and block_has_sufficienct_events) or \
 	   (block_is_a_ratio_block == False and block_has_no_contributions == False):
@@ -76,7 +76,7 @@ def print_and_analyze_block_contributions(block, block_is_a_ratio_block, events,
 
 			contributions_string = contributions_string + str(level) + ": " + str(fraction_contributions[level][block])
 
-			# analyzing the block's contributions' sufficiency
+			# evaluating the block's contributions' sufficiency
 			if sufficiency_contributions[level][block] >= 1:
 				contributions_string = contributions_string + "   Sufficient Events"
 			elif sufficiency_contributions[level][block] == 1/2:
@@ -85,7 +85,7 @@ def print_and_analyze_block_contributions(block, block_is_a_ratio_block, events,
 			print(contributions_string)		
 
 
-		# analyzing the block's contributions
+		# evaluating the block's contributions
 
 		conclusion_exists = False
 		fraction_exists = False
@@ -175,7 +175,7 @@ def print_and_analyze_block_contributions(block, block_is_a_ratio_block, events,
 
 
 		if block.type == RatioType.CARB_RATIO:
-			analyze_average_change(events, block, block_is_a_ratio_block)
+			evaluate_average_change(events, block, block_is_a_ratio_block)
 
 
 		if conclusion_exists:
@@ -185,11 +185,11 @@ def print_and_analyze_block_contributions(block, block_is_a_ratio_block, events,
 			print(fraction_string)
 
 
-	# printing and analyzing the block's sub-blocks
+	# evaluating the block's sub-blocks
 
 		if block_is_a_ratio_block:
 
-			print_and_analyze_half_hour_block_contributions(block, half_hours, events)
+			evaluate_half_hour_block_contributions(block, half_hours, events)
 			print("")
 
 	if block_is_a_ratio_block == False:
@@ -218,21 +218,21 @@ def print_and_analyze_block_contributions(block, block_is_a_ratio_block, events,
 				print("            " + str(level) + " -------------------   half sufficient event")
 
 
-def print_and_analyze_half_hour_block_contributions(block, half_hours, events):
+def evaluate_half_hour_block_contributions(block, half_hours, events):
 
 	for half_hour_block in half_hours:
 
 			if block.range.overlap(half_hour_block.range) > 0 and block.range.end - block.range.start > 0.5:
-				print_and_analyze_block_contributions(half_hour_block, False, events, half_hours)
+				evaluate_block_contributions(half_hour_block, False, events, half_hours)
 
 
 
-# printing and analyzing contributions
+# evaluating contributions
 
 print("basals:")
 print("")
 for block in basals:
-	print_and_analyze_block_contributions(block, True, events, half_hour_basals)
+	evaluate_block_contributions(block, True, events, half_hour_basals)
 
 print("")
 print("")
@@ -240,7 +240,7 @@ print("")
 print("carb ratios:")
 print("")
 for block in carb_ratios:
-	print_and_analyze_block_contributions(block, True, events, half_hour_carb_ratios)
+	evaluate_block_contributions(block, True, events, half_hour_carb_ratios)
 
 print("")
 print("")
@@ -248,7 +248,7 @@ print("")
 print("sensitivities:")
 print("")
 for block in sensitivities:
-	print_and_analyze_block_contributions(block, True, events, half_hour_sensitivities)
+	evaluate_block_contributions(block, True, events, half_hour_sensitivities)
 
 print("")
 print("")
