@@ -191,7 +191,10 @@ and no more.")
 		if end_time == -1:
 			raise Exception("The " + event_string + "has an unknown end time.")
 
-		if end_time - start_time >= 12:
+		if end_time-start_time + 0.00000000000001 < 4:
+			raise Exception("The " + event_string + "has a range of time of less than 4 hours.")
+
+		if end_time-start_time + 0.00000000000001 >= 12:
 
 			print("The " + event_string + "has a range of time of at least 12 hours.")
 			print("")
