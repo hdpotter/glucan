@@ -180,6 +180,10 @@ and no more.")
 		if start_bg == -1 and \
 		   event_type == EventType.BOLUS and start_level == Level.IN_RANGE and end_time - adjustment_time >= 2 and end_level_source == Source.TEST:
 
+			if printed_alert == False:
+				print("")
+				print("")
+				print("")
 			print("The " + event_string + "has an unknown start glucose.")
 			print("")
 
@@ -196,6 +200,10 @@ and no more.")
 
 		if end_time-start_time + 0.00000000000001 >= 12:
 
+			if printed_alert == False:
+				print("")
+				print("")
+				print("")
 			print("The " + event_string + "has a range of time of at least 12 hours.")
 			print("")
 
@@ -206,6 +214,10 @@ and no more.")
 
 		if end_time_source == Source.UNKNOWN:
 
+			if printed_alert == False:
+				print("")
+				print("")
+				print("")
 			print("The " + event_string + "has an unknown end time source.")
 			print("")
 
@@ -218,6 +230,10 @@ and no more.")
 
 		if end_level_source == Source.UNKNOWN:
 
+			if printed_alert == False:
+				print("")
+				print("")
+				print("")
 			print("The " + event_string + "has an unknown end Level source.")
 			print("")
 
@@ -228,6 +244,10 @@ and no more.")
 		if end_bg == -1 and \
 		   event_type == EventType.BOLUS and start_level == Level.IN_RANGE and end_time - adjustment_time >= 2 and end_level_source == Source.TEST:
 
+			if printed_alert == False:
+				print("")
+				print("")
+				print("")
 			print("The " + event_string + "has an unknown end glucose.")
 			print("")
 
