@@ -195,14 +195,14 @@ and no more.")
 		if end_time == -1:
 			raise Exception("The " + event_string + "has an unknown end time.")
 
-		if event_type == EventType.INDEPENDENT and end_time-start_time + 0.00000000000001 < 1:
-			raise Exception("The " + event_string + "has a range of time of less than 1 hour.")
+		if event_type == EventType.INDEPENDENT and end_time-start_time + 0.00000000000001 < 2:
+			raise Exception("The " + event_string + "has a range of time of less than 2 hours.")
 		
-		if event_type == EventType.BOLUS and end_time-start_time + 0.00000000000001 < 1+10/60:
-			raise Exception("The " + event_string + "has a range of time of less than 1 hour and 10 minutes.")
+		if event_type == EventType.BOLUS and end_time-start_time + 0.00000000000001 < 2+10/60:
+			raise Exception("The " + event_string + "has a range of time of less than 2 hours and 10 minutes.")
 		
-		if event_type == EventType.CORRECTION and end_time-start_time + 0.00000000000001 < 1+5/60:
-			raise Exception("The " + event_string + "has a range of time of less than 1 hour and 5 minutes.")
+		if event_type == EventType.CORRECTION and end_time-start_time + 0.00000000000001 < 2+5/60:
+			raise Exception("The " + event_string + "has a range of time of less than 2 hours and 5 minutes.")
 		
 		if end_time-start_time + 0.00000000000001 >= 12:
 
