@@ -1,9 +1,9 @@
-from calculate_contributions import calculate_contributions
+from calculate_contributions_from_manual_mode import calculate_contributions_from_manual_mode
 from Event import Level
 
 
 
-def evaluate_average_change(events, block, block_is_a_ratio_block):
+def evaluate_average_change_in_manual_mode(events, block, block_is_a_ratio_block):
 
 
 	# calculating the block's average carbohydrate-ratio-related change
@@ -23,7 +23,7 @@ def evaluate_average_change(events, block, block_is_a_ratio_block):
 
 	for event in events:
 
-		if calculate_contributions(event, block, False)[2] == 1/2:
+		if calculate_contributions_from_manual_mode(event, block, False)[2] == 1/2:
 
 			if event.start_bg != -1 and event.end_bg != -1:
 

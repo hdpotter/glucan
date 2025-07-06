@@ -2,7 +2,7 @@ from Event import EventType, Level, Source
 from RatioBlock import RatioType
 
 
-def calculate_contributions(event, block, inclusive):
+def calculate_contributions_from_manual_mode(event, block, inclusive):
 
 
 	overlap = block.range.overlap(event.range)
