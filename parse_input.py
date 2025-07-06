@@ -149,7 +149,7 @@ and no more.")
 		elif event_type == EventType.UNKNOWN:
 			event_string = event_string + "event "
 
-		event_string = event_string + "starting with a(n) " + str(start_level) + " blood glucose "
+		event_string = event_string + "starting with a(n) " + str(start_level) + " glucose "
 
 		if start_bg != -1:
 			event_string = event_string + "of " + str(start_bg) + " mg/dL "
@@ -157,7 +157,14 @@ and no more.")
 		if start_time != -1:
 			event_string = event_string + "at " + Range_of_Time.time_str(start_time) + " "
 
-		event_string = event_string + "and ending with a(n) " + str(end_level) + " blood glucose "		
+		event_string = event_string + "and ending with a(n) " + str(end_level) 
+
+		if end_level_source == Source.SENSOR:
+			event_string = event_string + " sensor glucose "	
+		elif end_level_source == Source.TEST:
+			event_string = event_string + " blood glucose "
+		else:
+			event_string = event_string + " glucose "
 
 		if end_bg != -1:
 			event_string = event_string + "of " + str(end_bg) + " mg/dL "
@@ -245,6 +252,9 @@ and no more.")
 			printed_alert = True
 
 			end_level_source = Source.SENSOR
+
+		if event_type == EventType.INDEPENDENT and end_level == Level.IN_RANGE and end_level_source == Source.TEST:
+			raise Exception("The " + event_string + "is an independent event with an end level of in range and an end level source of test.")
 
 		if end_bg == -1 and \
 		   event_type == EventType.BOLUS and start_level == Level.IN_RANGE and end_time - adjustment_time >= 2 and end_level_source == Source.TEST:
