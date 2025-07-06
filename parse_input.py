@@ -122,9 +122,6 @@ and no more.")
 
 		# making range of time compliant
 
-		if adjustment_time != -1 and adjustment_time < start_time:
-			adjustment_time += 24.
-
 		if end_time != -1 and end_time < start_time:
 			end_time += 24.
 
@@ -232,10 +229,6 @@ and no more.")
 		if end_time_source == Source.SENSOR and \
 		   end_time-start_time - 0.00000000000001 > 4:
 				raise Exception("The " + event_string + "has a range of time not equal to 4 hours.")
-
-		if end_time_source == Source.TEST and \
-		   (event_type == EventType.BOLUS or event_type == EventType.CORRECTION) and adjustment_time-start_time + 0.00000000000001 < 4:
-				raise Exception("The " + event_string + "has less than 4 hours between its start time and adjustment time.")
 
 		if end_level == Level.UNKNOWN:
 			raise Exception("The " + event_string + "has an unknown end level.")
