@@ -194,29 +194,32 @@ and no more.")
 
 		if end_time == -1:
 			raise Exception("The " + event_string + "has an unknown end time.")
+		
+		if end_time-start_time + 0.00000000000001 < 4:
 
-		if event_type == EventType.INDEPENDENT and end_time-start_time + 0.00000000000001 < 2:
-			raise Exception("The " + event_string + "has a range of time of less than 2 hours.")
-		
-		if event_type == EventType.BOLUS and end_time-start_time + 0.00000000000001 < 2+10/60:
-			raise Exception("The " + event_string + "has a range of time of less than 2 hours and 10 minutes.")
-		
-		if event_type == EventType.CORRECTION and end_time-start_time + 0.00000000000001 < 2+5/60:
-			raise Exception("The " + event_string + "has a range of time of less than 2 hours and 5 minutes.")
-		
+			raise Exception("The " + event_string + "has a range of time less than 4 hours.")
+
+		if end_level_source == Source.SENSOR and \
+		   end_time-start_time + 0.00000000000001 > 4:
+				raise Exception("The " + event_string + "has a range of time not equal to 4 hours.")
+
+		if end_level_source == Source.TEST and \
+		   (event_type == EventType.BOLUS or event_type == EventType.CORRECTION) and adjustment_time-start_time + 0.00000000000001 < 4:
+				raise Exception("The " + event_string + "has less than 4 hours between its start time and adjustment time.")
+
 		if end_time-start_time + 0.00000000000001 >= 12:
 
 			if printed_alert == False:
 				print("")
 				print("")
 				print("")
-			print("The " + event_string + "has a range of time of at least 12 hours.")
+			print("The " + event_string + "has a range of time greater than or equal to 12 hours.")
 			print("")
 
 			printed_alert = True
 
 		if adjustment_time != -1 and not range.contains_time(adjustment_time, True):
-			raise Exception("The adjustment time of the " + event_string + "isn't a part of its range of time.")
+			raise Exception("The " + event_string + "has an adjustment time that isn't a part of its range of time.")
 
 		if end_time_source == Source.UNKNOWN:
 
