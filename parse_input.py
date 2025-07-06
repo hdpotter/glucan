@@ -175,7 +175,7 @@ and no more.")
 			raise Exception("The " + event_string + "has an unknown start time.")
 
 		if start_level == Level.UNKNOWN and event_type == EventType.BOLUS:
-			raise Exception("The " + event_string + "has an unknown start Level.")
+			raise Exception("The " + event_string + "has an unknown start level.")
 
 		if start_bg == -1 and \
 		   event_type == EventType.BOLUS and start_level == Level.IN_RANGE and end_time - adjustment_time >= 2 and end_level_source == Source.TEST:
@@ -232,7 +232,7 @@ and no more.")
 			end_time_source = Source.TEST
 
 		if end_level == Level.UNKNOWN:
-			raise Exception("The " + event_string + "has an unknown end Level.")
+			raise Exception("The " + event_string + "has an unknown end level.")
 
 		if end_level_source == Source.UNKNOWN:
 
@@ -240,7 +240,7 @@ and no more.")
 				print("")
 				print("")
 				print("")
-			print("The " + event_string + "has an unknown end Level source.")
+			print("The " + event_string + "has an unknown end level source.")
 			print("")
 
 			printed_alert = True
