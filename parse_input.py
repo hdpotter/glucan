@@ -146,7 +146,7 @@ and no more.")
 			event_string = event_string + "bolus "
 		elif event_type == EventType.CORRECTION:
 			event_string = event_string + "correction "
-		elif event_type == EventType.UNKNOWN:
+		else:
 			event_string = event_string + "event "
 
 		event_string = event_string + "starting with a(n) " + str(start_level) + " glucose "
