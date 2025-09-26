@@ -1,4 +1,4 @@
-from Event import Event, EventType, Level, Source
+from Event import Event, Mode, EventType, Level, Source
 from Range_of_Time import Range_of_Time
 from RatioBlock import RatioBlock
 
@@ -44,9 +44,10 @@ def parse_events(file):
 
 	first_line_tokens = lines[0].split(",")
 
-	if len(first_line_tokens) != 10:
+	if len(first_line_tokens) != 11:
 		raise Exception \
-("Each line of glucan/" + file + " should have the ten columns, \
+("Each line of glucan/" + file + " should have the eleven columns, \
+mode, \
 independent_bolus_or_correction, \
 start_time, \
 start_ low_in_range_or_high, \
@@ -57,19 +58,21 @@ end_ low_in_range_or_high, end_level_ test_or_sensor, and \
 end_ blood_glucose, \
 and no more.")
 
-	if ( first_line_tokens[0] != "independent_bolus_or_correction" or
-	     first_line_tokens[1] != "start_time" or
-	     first_line_tokens[2] != "start_ low_in_range_or_high" or
-	     first_line_tokens[3] != "start_ blood_glucose" or
-	     first_line_tokens[4] != "adjustment_time" or
-	     first_line_tokens[5] != "end_time" or
-	     first_line_tokens[6] != "end_time_ sensor_or_test" or		
-	     first_line_tokens[7] != "end_ low_in_range_or_high" or
-	     first_line_tokens[8] != "end_level_ test_or_sensor" or
-	     first_line_tokens[9] != "end_ blood_glucose"
+	if ( first_line_tokens[0] != "mode" or
+		 first_line_tokens[1] != "independent_bolus_or_correction" or
+	     first_line_tokens[2] != "start_time" or
+	     first_line_tokens[3] != "start_ low_in_range_or_high" or
+	     first_line_tokens[4] != "start_ blood_glucose" or
+	     first_line_tokens[5] != "adjustment_time" or
+	     first_line_tokens[6] != "end_time" or
+	     first_line_tokens[7] != "end_time_ sensor_or_test" or		
+	     first_line_tokens[8] != "end_ low_in_range_or_high" or
+	     first_line_tokens[9] != "end_level_ test_or_sensor" or
+	     first_line_tokens[10] != "end_ blood_glucose"
 		):
 		raise Exception \
 ("The first line of glucan/data/events.csv should be \
+| mode \
 | independent_bolus_or_correction \
 | start_time \
 | start_ low_in_range_or_high \
@@ -95,29 +98,31 @@ and no more.")
 		tokens = line.split(",")
 
 		# ensuring empty columns after the final entry in a line are parsed
-		while len(tokens) < 10:
+		while len(tokens) < 11:
 			tokens.append("")
 
 
 		# parsing entries
 
-		event_type = EventType.parse(tokens[0])
+		mode = Mode.parse(tokens[0])
 
-		start_time = parse_time(tokens[1], -1)
+		event_type = EventType.parse(tokens[1])
 
-		start_level = Level.parse(tokens[2])
+		start_time = parse_time(tokens[2], -1)
 
-		start_bg = parse_integer(tokens[3], -1)
+		start_level = Level.parse(tokens[3])
 
-		adjustment_time = parse_time(tokens[4], -1)
+		start_bg = parse_integer(tokens[4], -1)
 
-		end_time = parse_time(tokens[5], -1)
-		end_time_source = Source.parse(tokens[6])
+		adjustment_time = parse_time(tokens[5], -1)
 
-		end_level = Level.parse(tokens[7])
-		end_level_source = Source.parse(tokens[8])
+		end_time = parse_time(tokens[6], -1)
+		end_time_source = Source.parse(tokens[7])
 
-		end_bg = parse_integer(tokens[9], -1)
+		end_level = Level.parse(tokens[8])
+		end_level_source = Source.parse(tokens[9])
+
+		end_bg = parse_integer(tokens[10], -1)
 		
 
 		# making range of time compliant
@@ -149,15 +154,29 @@ and no more.")
 		else:
 			event_string = event_string + "event "
 
-		event_string = event_string + "starting with a(n) " + str(start_level) + " glucose "
+		if mode != Mode.UNKNOWN:
+
+			event_string = event_string + "in "
+ 
+			if mode == Mode.AUTOMATIC:
+				event_string = event_string + "automatic "
+			else:
+				event_string = event_string + "manual "
+
+			event_string = event_string + "mode, "
+
+		event_string = event_string + "starting with a(n) " + str(start_level) + " glucose"
 
 		if start_bg != -1:
-			event_string = event_string + "of " + str(start_bg) + " mg/dL "
+			event_string = event_string + " of " + str(start_bg) + " mg/dL"
 
 		if start_time != -1:
-			event_string = event_string + "at " + Range_of_Time.time_str(start_time) + " "
+			event_string = event_string + " at " + Range_of_Time.time_str(start_time)
 
-		event_string = event_string + "and ending with a(n) " + str(end_level) 
+		if mode != Mode.UNKNOWN:
+			event_string = ","
+
+		event_string = event_string + " and ending with a(n) " + str(end_level) 
 
 		if end_level_source == Source.SENSOR:
 			event_string = event_string + " sensor glucose "	
@@ -175,8 +194,14 @@ and no more.")
 
 		# printing alerts or raising exceptions in order to get more useful event entries
 
+		if mode == Mode.UNKNOWN:
+			raise Exception("The " + event_string + "has an unknown mode.")
+
 		if event_type == EventType.UNKNOWN:
 			raise Exception("The " + event_string + "has an unknown event type.")
+		
+		if mode == Mode.AUTOMATIC and event_type == EventType.CORRECTION:
+			raise Exception("The " + event_string + "is a correction in automatic mode.")
 
 		if start_time == -1: 
 			raise Exception("The " + event_string + "has an unknown start time.")

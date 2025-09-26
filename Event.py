@@ -5,6 +5,26 @@ from Range_of_Time import Range_of_Time
 
 
 
+class Mode(Enum):
+	AUTOMATIC = 0
+	MANUAL = 1
+	UNKNOWN = 2
+
+
+	@staticmethod
+	def parse(string):
+
+		if string == "automatic":
+			return Mode.AUTOMATIC
+
+		elif string == "manual":
+			return Mode.MANUAL
+
+		else:
+			return Mode.UNKNOWN
+
+
+
 class EventType(Enum):
 	INDEPENDENT = 0
 	BOLUS = 1
