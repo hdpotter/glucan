@@ -174,7 +174,7 @@ and no more.")
 			event_string = event_string + " at " + Range_of_Time.time_str(start_time)
 
 		if mode != Mode.UNKNOWN:
-			event_string = ","
+			event_string = event_string + ","
 
 		event_string = event_string + " and ending with a(n) " + str(end_level) 
 
