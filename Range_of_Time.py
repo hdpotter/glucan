@@ -60,7 +60,9 @@ class Range_of_Time:
 	@staticmethod
 	def time_str(time):
 
+
 		whole_hours = int( modf(time) [1] )
+		whole_hours = whole_hours % 24
 
 		minutes = modf(time) [0] * 60
 		whole_minutes = round( minutes )
