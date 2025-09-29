@@ -1,6 +1,6 @@
 from Event import Event, Mode, EventType, Level, Source
 from Range_of_Time import Range_of_Time
-from RatioBlock import RatioBlock
+from RatioBlock import RatioBlock, RatioType
 
 
 
@@ -297,6 +297,7 @@ and no more.")
 		events.append( Event( \
 			uid = uid, \
 			type = event_type, \
+			mode = mode, \
 			start_level = start_level, \
 			start_bg = start_bg, \
 			adjustment_time = adjustment_time, \
@@ -331,10 +332,17 @@ def parse_ratio_blocks(file, ratio_type):
 	first_line_tokens = lines[0].split(",")
 
 	if len(first_line_tokens) != 2:
-		raise Exception("Each line of glucan/" + file + " should have exactly two entries, a start_time and a ratio entry." )
+		if ratio_type == RatioType.ACTIVE_INSULIN_TIME:
+			raise Exception("Each line of glucan/" + file + " should have exactly two entries, a start_time and an hours_and_minutes entry.")
+		else:
+			raise Exception("Each line of glucan/" + file + " should have exactly two entries, a start_time and a ratio entry.")
 
-	if first_line_tokens[0] != "start_time" or first_line_tokens[1] != "ratio" :
-		raise Exception("The first line of glucan/" + file + " should be | start_time | ratio |.")
+	if ratio_type == RatioType.ACTIVE_INSULIN_TIME:
+		if first_line_tokens[0] != "start_time" or first_line_tokens[1] != "hours_and_minutes":
+			raise Exception("The first line of glucan/" + file + " should be | start_time | hours_and_minutes |.")
+	else:
+		if first_line_tokens[0] != "start_time" or first_line_tokens[1] != "ratio":
+			raise Exception("The first line of glucan/" + file + " should be | start_time | ratio |.")
 
 
 	if(parse_time(lines[1].split(",")[0], -1) != 0):
@@ -354,7 +362,20 @@ def parse_ratio_blocks(file, ratio_type):
 		if start_time == -1:
 			raise Exception("Line " + line + " of glucan/" + file + " should have a start_time entry.")
 
-		ratio = float( tokens[1] )
+
+		if ratio_type == RatioType.ACTIVE_INSULIN_TIME:
+
+			ratio = parse_time( tokens[1], -1 )
+
+			if ratio == -1:
+				raise Exception("Line " + line + " of glucan/" + file + " should have an hours_and_minutes entry.")
+
+		else:
+
+			ratio = float( tokens[1] )
+
+			if ratio == -1:
+				raise Exception("Line " + line + " of glucan/" + file + " should have a ratio entry.")
 
 
 		start_times_and_ratios.append( [start_time, ratio] )

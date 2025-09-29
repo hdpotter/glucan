@@ -1,4 +1,4 @@
-from Event import EventType, Level, Source
+from Event import EventType, Level, Mode, Source
 from RatioBlock import RatioType
 
 
@@ -8,13 +8,21 @@ def calculate_contributions_from_manual_mode(event, block, inclusive):
 	overlap = block.range.overlap(event.range)
 	fraction = overlap / event.range.length()
 
+	sufficiency_for_changing_active_insulin_times = 0
 	sufficiency_for_changing_basals = 0
 	sufficiency_for_changing_carb_ratios = 0
 	sufficiency_for_changing_sensitivities = 0
 
 
 	if event.type == EventType.INDEPENDENT:
-		if block.type == RatioType.BASAL:
+
+		if block.type == RatioType.ACTIVE_INSULIN_TIME and event.mode == Mode.AUTOMATIC:
+
+			if block.range.contains_time(event.range.end, inclusive) and \
+			   event.end_time_source == Source.SENSOR and event.end_level_source == Source.TEST:
+					sufficiency_for_changing_active_insulin_times = 1/2
+
+		elif block.type == RatioType.BASAL and event.mode == Mode.MANUAL:
 
 			if block.range.contains_time(event.range.end, inclusive) and \
 			   event.end_time_source == Source.SENSOR and event.end_level_source == Source.TEST:
@@ -26,8 +34,8 @@ def calculate_contributions_from_manual_mode(event, block, inclusive):
 
 	elif event.type == EventType.BOLUS:
 
-		if block.type == RatioType.BASAL:
-			fraction *= 1./2.  
+		if block.type == RatioType.BASAL and event.mode == Mode.MANUAL:
+			fraction *= 1./2.
 
 		elif block.type == RatioType.CARB_RATIO:
 			if block.range.contains_time(event.adjustment_time, inclusive):
@@ -37,14 +45,15 @@ def calculate_contributions_from_manual_mode(event, block, inclusive):
 					if event.end_level_source == Source.TEST:
 						sufficiency_for_changing_carb_ratios = 1/2
 
-				elif (event.start_level == Level.LOW or event.start_level == Level.HIGH):
-					fraction = 1./4.
+				elif (event.start_level == Level.LOW or event.start_level == Level.HIGH) and \
+					 event.mode == Mode.MANUAL:
+							fraction = 1./4.
 				else:
 					fraction = 0
 			else:
 				fraction = 0
 
-		elif block.type == RatioType.SENSITIVITY:
+		elif block.type == RatioType.SENSITIVITY and event.mode == Mode.MANUAL:
 			if block.range.contains_time(event.adjustment_time, inclusive) and \
 			   (event.start_level == Level.LOW or event.start_level == Level.HIGH):
 					fraction = 1./4.
@@ -55,23 +64,23 @@ def calculate_contributions_from_manual_mode(event, block, inclusive):
 			fraction = 0
 
 
-	elif event.type == EventType.CORRECTION:
+	elif event.type == EventType.CORRECTION and event.mode == Mode.MANUAL:
 
-		if block.type == RatioType.BASAL:
-			fraction *= 1./2.
+			if block.type == RatioType.BASAL:
+				fraction *= 1./2.
 
-		elif block.type == RatioType.SENSITIVITY:
-			if block.range.contains_time(event.adjustment_time, inclusive):
-				fraction = 1./2.
+			elif block.type == RatioType.SENSITIVITY:
+				if block.range.contains_time(event.adjustment_time, inclusive):
+					fraction = 1./2.
 
-				if event.end_level_source == Source.TEST:
-					sufficiency_for_changing_sensitivities = 1/2
+					if event.end_level_source == Source.TEST:
+						sufficiency_for_changing_sensitivities = 1/2
+
+				else:
+					fraction = 0
 
 			else:
 				fraction = 0
-
-		else:
-			fraction = 0
 
 
 	else:
@@ -81,4 +90,8 @@ def calculate_contributions_from_manual_mode(event, block, inclusive):
 	if event.end_level_source != Source.TEST:
 		fraction *= 1./3.
 
-	return (fraction, sufficiency_for_changing_basals, sufficiency_for_changing_carb_ratios, sufficiency_for_changing_sensitivities)
+
+	return (fraction, \
+		    sufficiency_for_changing_active_insulin_times, sufficiency_for_changing_basals, \
+			sufficiency_for_changing_carb_ratios, \
+			sufficiency_for_changing_sensitivities)

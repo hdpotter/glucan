@@ -111,6 +111,7 @@ class Source(Enum):
 @dataclass
 class Event:
 	uid: int
+	mode: Mode
 	type: EventType
 	range: Range_of_Time
 	start_level: Level

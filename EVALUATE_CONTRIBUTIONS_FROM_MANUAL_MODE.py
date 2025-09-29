@@ -1,5 +1,6 @@
 from evaluate_average_change_in_manual_mode import evaluate_average_change_in_manual_mode
 from Event import Level
+from Range_of_Time import Range_of_Time
 from RatioBlock import RatioType
 from sum_contributions_from_manual_mode import *
 
@@ -38,12 +39,14 @@ def evaluate_block_contributions(block, block_is_a_ratio_block, events, half_hou
 	
 	if block_is_a_ratio_block:
 
-		if (block.type == RatioType.CARB_RATIO and block.ratio >= 10) or block.type == RatioType.SENSITIVITY:
-			ratio = int(block.ratio)
+		if block.type == RatioType.ACTIVE_INSULIN_TIME:
+			ratio_string = Range_of_Time.time_str(block.ratio)
+		elif (block.type == RatioType.CARB_RATIO and block.ratio >= 10) or block.type == RatioType.SENSITIVITY:
+			ratio_string = str( int(block.ratio) )
 		else:
-			ratio = block.ratio
+			ratio_string = str(block.ratio)
 
-		block_string = block_string + " = " + str(ratio)
+		block_string = block_string + " = " + ratio_string + " "
 
 	block_string = block_string + ":"
 
@@ -228,6 +231,14 @@ def evaluate_half_hour_block_contributions(block, half_hours, events):
 
 
 # evaluating contributions
+
+print("active insulin times:")
+print("")
+for block in active_insulin_times:
+	evaluate_block_contributions(block, True, events, half_hour_active_insulin_times)
+
+print("")
+print("")
 
 print("basals:")
 print("")

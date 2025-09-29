@@ -5,9 +5,10 @@ from Range_of_Time import Range_of_Time
 
 
 class RatioType(Enum):
-	BASAL = 0
-	CARB_RATIO = 1
-	SENSITIVITY = 2
+	ACTIVE_INSULIN_TIME = 0
+	BASAL = 1
+	CARB_RATIO = 2
+	SENSITIVITY = 3
 
 
 @dataclass

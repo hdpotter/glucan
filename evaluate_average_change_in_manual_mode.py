@@ -23,7 +23,7 @@ def evaluate_average_change_in_manual_mode(events, block, block_is_a_ratio_block
 
 	for event in events:
 
-		if calculate_contributions_from_manual_mode(event, block, False)[2] == 1/2:
+		if calculate_contributions_from_manual_mode(event, block, False)[3] == 1/2:
 
 			if event.start_bg != -1 and event.end_bg != -1:
 
