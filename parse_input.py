@@ -252,12 +252,11 @@ and no more.")
 
 			end_time_source = Source.TEST
 
-		if end_time_source == Source.SENSOR and \
-		   end_time-start_time - 0.00000000000001 > 4:
-				raise Exception("The " + event_string + "has a range of time not equal to 4 hours.")
-
 		if end_level == Level.UNKNOWN:
 			raise Exception("The " + event_string + "has an unknown end level.")
+
+		if end_time_source == Source.SENSOR and end_level != Level.IN_RANGE and end_time-start_time - 0.00000000000001 > 4:
+				raise Exception("The " + event_string + "has a range of time not equal to 4 hours.")
 
 		if end_level_source == Source.UNKNOWN:
 
