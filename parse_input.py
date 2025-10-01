@@ -123,11 +123,17 @@ and no more.")
 		end_level_source = Source.parse(tokens[9])
 
 		end_bg = parse_integer(tokens[10], -1)
-		
 
-		# making range of time compliant
+
+		# making times compliant
+
+		if adjustment_time != -1 and adjustment_time < start_time:
+			adjustment_time += 24.
 
 		if end_time != -1 and end_time < start_time:
+			end_time += 24.
+
+		if end_time != -1 and end_time < adjustment_time:
 			end_time += 24.
 
 		range = Range_of_Time(start = start_time, end = end_time)
@@ -209,18 +215,6 @@ and no more.")
 		if start_level == Level.UNKNOWN and event_type == EventType.BOLUS:
 			raise Exception("The " + event_string + "has an unknown start level.")
 
-		if start_bg == -1 and \
-		   event_type == EventType.BOLUS and start_level == Level.IN_RANGE and end_time - adjustment_time >= 2 and end_level_source == Source.TEST:
-
-			if printed_alert == False:
-				print("")
-				print("")
-				print("")
-			print("The " + event_string + "has an unknown start glucose.")
-			print("")
-
-			printed_alert = True
-
 		if adjustment_time == -1 and (event_type == EventType.BOLUS or event_type == EventType.CORRECTION):
 			raise Exception("The " + event_string + "has an unknown adjustment time.")
 
@@ -278,17 +272,21 @@ and no more.")
 
 			end_level_source = Source.SENSOR
 
-		if event_type == EventType.INDEPENDENT and end_level == Level.IN_RANGE and end_level_source == Source.TEST:
-			raise Exception("The " + event_string + "is an independent event with an end level of in range and an end level source of test.")
+		if (start_bg == -1 or end_bg == -1) and end_level_source == Source.TEST and \
+		   event_type == EventType.BOLUS and start_level == Level.IN_RANGE and end_time - adjustment_time >= 2:
 
-		if end_bg == -1 and \
-		   event_type == EventType.BOLUS and start_level == Level.IN_RANGE and end_time - adjustment_time >= 2 and end_level_source == Source.TEST:
+			if start_bg == -1 and end_bg == -1:
+				glucose_string = "start and end "
+			elif start_bg == -1:
+				glucose_string = "start "
+			else:
+				glucose_string = "end "
 
 			if printed_alert == False:
 				print("")
 				print("")
 				print("")
-			print("The " + event_string + "has an unknown end glucose.")
+			print("The " + event_string + "has an unknown " + glucose_string + "glucose.")
 			print("")
 
 			printed_alert = True
