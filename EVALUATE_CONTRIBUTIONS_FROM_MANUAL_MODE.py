@@ -193,7 +193,7 @@ def evaluate_block_contributions(block, block_is_a_ratio_block, events, half_hou
 
 	# evaluating the block's sub-blocks
 
-		if block_is_a_ratio_block:
+		if block.type != RatioType.ACTIVE_INSULIN_TIME and block_is_a_ratio_block:
 
 			evaluate_half_hour_block_contributions(block, half_hours, events)
 			print("")
