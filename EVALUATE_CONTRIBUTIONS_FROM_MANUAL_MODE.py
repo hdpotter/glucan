@@ -77,6 +77,9 @@ def evaluate_block_contributions(block, block_is_a_ratio_block, events, half_hou
 			else:
 				contributions_string = "            "
 
+			if fraction_contributions[level][block] == 0:
+				fraction_contributions[level][block] = int(fraction_contributions[level][block])
+
 			contributions_string = contributions_string + str(level) + ": " + str(fraction_contributions[level][block])
 
 			# evaluating the block's contributions' sufficiency
