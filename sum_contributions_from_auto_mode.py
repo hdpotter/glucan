@@ -10,8 +10,6 @@ from RatioBlock import RatioBlock, RatioType
 
 events = parse_events("data/events.csv")
 
-basals = parse_ratio_blocks("data/basals.csv", RatioType.BASAL)
-
 carb_ratios = parse_ratio_blocks("data/carb_ratios.csv", RatioType.CARB_RATIO)
 
 
@@ -28,7 +26,7 @@ for hh in range(0, 48):
 		start = float(hh)/2., \
 		end = float(hh)/2. + 0.5 )
 
-	for block in basals:
+	for block in carb_ratios:
 		if Range_of_Time.overlap(block.range, half_hour_range) > 0:
 			ratio = block.ratio
 

@@ -82,7 +82,7 @@ for hh in range(0, 48):
 		start = float(hh)/2., \
 		end = float(hh)/2. + 0.5 )
 
-	for block in basals:
+	for block in carb_ratios:
 		if Range_of_Time.overlap(block.range, half_hour_range) > 0:
 			ratio = block.ratio
 
@@ -107,7 +107,7 @@ for hh in range(0, 48):
 		start = float(hh)/2., \
 		end = float(hh)/2. + 0.5 )
 
-	for block in basals:
+	for block in sensitivities:
 		if Range_of_Time.overlap(block.range, half_hour_range) > 0:
 			ratio = block.ratio
 
