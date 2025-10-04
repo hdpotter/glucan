@@ -186,7 +186,7 @@ for event in events:
 		if block.range.overlap(event.range) > 0:
 			half_hour_active_insulin_times_overlapping[event].append(block)
 	for block in half_hour_active_insulin_times:
-		if block.range.touch(event.range) == True:
+		if block.range.touch_block(event.range) == True:
 			half_hour_active_insulin_times_touching[event].append(block)
 
 
@@ -198,31 +198,31 @@ for event in events:
 		if block.range.overlap(event.range) > 0:
 			half_hour_basals_overlapping[event].append(block)
 	for block in half_hour_basals:
-		if block.range.touch(event.range) == True:
+		if block.range.touch_block(event.range) == True:
 			half_hour_basals_touching[event].append(block)
 
 
 	for block in carb_ratios:
-		if block.range.overlap(event.range) > 0:
+		if block.range.contains_time(event.adjustment_time, False) == True:
 			carb_ratios_overlapping[event].append(block)
 
 	for block in half_hour_carb_ratios:
-		if block.range.overlap(event.range) > 0:
+		if block.range.contains_time(event.adjustment_time, False) == True:
 			half_hour_carb_ratios_overlapping[event].append(block)
 	for block in half_hour_carb_ratios:
-		if block.range.touch(event.range) == True:
+		if block.range.touch_time(event.adjustment_time) == True:
 			half_hour_carb_ratios_touching[event].append(block)
 
 
 	for block in sensitivities:
-		if block.range.overlap(event.range) > 0:
+		if block.range.contains_time(event.adjustment_time, False) == True:
 			sensitivities_overlapping[event].append(block)
 
 	for block in half_hour_sensitivities:
-		if block.range.overlap(event.range) > 0:
+		if block.range.contains_time(event.adjustment_time, False) == True:
 			half_hour_sensitivities_overlapping[event].append(block)
 	for block in half_hour_sensitivities:
-		if block.range.touch(event.range) == True:
+		if block.range.touch_time(event.adjustment_time) == True:
 			half_hour_sensitivities_touching[event].append(block)
 
 
@@ -364,7 +364,7 @@ for event in events:
 
 		sufficiency_contributions[event.end_level][block] += calculate_contributions_from_manual_mode(event, block, False)[3]
 	for block in half_hour_carb_ratios_touching[event]:
-		if event.range.end not in carb_ratio_starts and block.range.end == event.range.end % 24:
+		if event.adjustment_time not in carb_ratio_starts and block.range.end == event.adjustment_time % 24:
 				on_the_half_hour_sufficiency_contributions[event.end_level][block] += calculate_contributions_from_manual_mode(event, block, True)[3]
 
 
@@ -378,5 +378,5 @@ for event in events:
 
 		sufficiency_contributions[event.end_level][block] += calculate_contributions_from_manual_mode(event, block, False)[4]
 	for block in half_hour_sensitivities_touching[event]:
-		if event.range.end not in sensitivity_starts and block.range.end == event.range.end % 24:
+		if event.adjustment_time not in sensitivity_starts and block.range.end == event.adjustment_time % 24:
 				on_the_half_hour_sufficiency_contributions[event.end_level][block] += calculate_contributions_from_manual_mode(event, block, True)[4]

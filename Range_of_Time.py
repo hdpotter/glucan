@@ -21,9 +21,11 @@ class Range_of_Time:
 			+ Range_of_Time.overlap_no_wrap(self.timeshift(), other) \
 			+ Range_of_Time.overlap_no_wrap(self, other.timeshift())
 
-	def touch(self, other):
-		return Range_of_Time.overlap(self, other) > 0 or \
-		       (Range_of_Time.overlap(self, other) == 0 and (self.start == other.end or other.start == self.end))
+	def touch_block(self, other):
+		return Range_of_Time.overlap(self, other) == 0 and (self.start == other.end or other.start == self.end)
+	
+	def touch_time(self, time):
+		return self.start == time or self.end == time
 
 	@staticmethod
 	def overlap_no_wrap(a, b):
