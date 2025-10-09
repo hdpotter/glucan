@@ -212,7 +212,10 @@ and no more.")
 		if start_time == -1: 
 			raise Exception("The " + event_string + "has an unknown start time.")
 
-		if start_level == Level.UNKNOWN and event_type == EventType.BOLUS:
+		if mode == Mode.AUTOMATIC and event_type == EventType.BOLUS and (start_level == Level.LOW or start_level == Level.HIGH):
+			raise Exception("The " + event_string + "is a bolus in automatic mode starting with a low or high glucose.")
+
+		if event_type == EventType.BOLUS and start_level == Level.UNKNOWN:
 			raise Exception("The " + event_string + "has an unknown start level.")
 
 		if adjustment_time == -1 and (event_type == EventType.BOLUS or event_type == EventType.CORRECTION):

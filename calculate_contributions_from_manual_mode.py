@@ -45,15 +45,12 @@ def calculate_contributions_from_manual_mode(event, block, inclusive):
 					if event.end_level_source == Source.TEST:
 						sufficiency_for_changing_carb_ratios = 1/2
 
-				elif (event.start_level == Level.LOW or event.start_level == Level.HIGH) and \
-					 event.mode == Mode.MANUAL:
-							fraction = 1./4.
-				else:
-					fraction = 0
+				elif (event.start_level == Level.LOW or event.start_level == Level.HIGH):
+					fraction = 1./4.
 			else:
 				fraction = 0
 
-		elif block.type == RatioType.SENSITIVITY and event.mode == Mode.MANUAL:
+		elif block.type == RatioType.SENSITIVITY:
 			if block.range.contains_time(event.adjustment_time, inclusive) and \
 			   (event.start_level == Level.LOW or event.start_level == Level.HIGH):
 					fraction = 1./4.
@@ -64,7 +61,7 @@ def calculate_contributions_from_manual_mode(event, block, inclusive):
 			fraction = 0
 
 
-	elif event.type == EventType.CORRECTION and event.mode == Mode.MANUAL:
+	elif event.type == EventType.CORRECTION:
 
 			if block.type == RatioType.BASAL:
 				fraction *= 1./2.
