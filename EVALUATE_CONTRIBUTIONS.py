@@ -1,8 +1,8 @@
-from evaluate_average_change_in_manual_mode import evaluate_average_change_in_manual_mode
+from evaluate_average_change import evaluate_average_change
 from Event import Level
 from Range_of_Time import Range_of_Time
 from RatioBlock import RatioType
-from sum_contributions_from_manual_mode import *
+from sum_contributions import *
 
 
 
@@ -181,7 +181,7 @@ def evaluate_block_contributions(block, block_is_a_ratio_block, events, half_hou
 
 
 		if block.type == RatioType.CARB_RATIO:
-			evaluate_average_change_in_manual_mode(events, block, block_is_a_ratio_block)
+			evaluate_average_change(events, block, block_is_a_ratio_block)
 
 
 		if conclusion_exists:
